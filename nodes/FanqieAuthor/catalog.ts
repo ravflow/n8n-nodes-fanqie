@@ -1206,7 +1206,7 @@ export const endpoints: Endpoint[] = [
 		fields: [],
 		sourceFiles: ['async-main.93c6ad0a.js'],
 		versionEvidence: 'frontend-constant',
-		liveVerified: false,
+		liveVerified: true,
 	},
 	{
 		id: 'POST:/api/author/book/check_user_status/v0/',
@@ -1861,7 +1861,7 @@ export const endpoints: Endpoint[] = [
 		fields: ['RawBody'],
 		sourceFiles: ['async-main.93c6ad0a.js'],
 		versionEvidence: 'frontend-constant',
-		liveVerified: false,
+		liveVerified: true,
 	},
 	{
 		id: 'POST:/api/author/delete_article/v1',

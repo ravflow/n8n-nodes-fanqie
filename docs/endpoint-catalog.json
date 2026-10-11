@@ -2,7 +2,7 @@
 	"discoveredAt": "2026-10-11",
 	"sourcePage": "https://fanqienovel.com/main/writer/",
 	"total": 365,
-	"liveVerifiedCount": 2,
+	"liveVerifiedCount": 4,
 	"endpoints": [
 		{
 			"id": "GET:/api/author/account/info/v0/",
@@ -1215,7 +1215,7 @@
 			"fields": [],
 			"sourceFiles": ["async-main.93c6ad0a.js"],
 			"versionEvidence": "frontend-constant",
-			"liveVerified": false
+			"liveVerified": true
 		},
 		{
 			"id": "POST:/api/author/book/check_user_status/v0/",
@@ -1878,7 +1878,7 @@
 			"fields": ["RawBody"],
 			"sourceFiles": ["async-main.93c6ad0a.js"],
 			"versionEvidence": "frontend-constant",
-			"liveVerified": false
+			"liveVerified": true
 		},
 		{
 			"id": "POST:/api/author/delete_article/v1",

@@ -7,6 +7,8 @@ import type {
 } from 'n8n-workflow';
 import type { Endpoint, Operation, RequestSettings } from './types';
 import { qrConnection } from './qrConnection';
+import { COVER_PATH, coverQuery, multipartCover } from './image';
+import type { CoverUpload } from './image';
 
 type Context = IExecuteFunctions | ILoadOptionsFunctions;
 export const API_ORIGIN = 'https://fanqienovel.com';
@@ -221,8 +223,11 @@ export async function authorRequest(
 	params: IDataObject,
 	settings: RequestSettings,
 	itemIndex = 0,
+	cover?: CoverUpload,
 ): Promise<IDataObject> {
 	assertAuthorPath(endpoint.path);
+	if (cover && (endpoint.path !== COVER_PATH || endpoint.method !== 'POST'))
+		throw new Error('Image uploads are limited to the author cover endpoint');
 	validateObject(params);
 	const defaultAuthentication = context.getNode().typeVersion < 1.1 ? 'session' : 'qrLogin';
 	const authentication =
@@ -250,7 +255,12 @@ export async function authorRequest(
 		sendCredentialsOnCrossOriginRedirect: false,
 		headers: { Accept: 'application/json, text/plain, */*' },
 	};
-	if (endpoint.method === 'GET') options.qs = data;
+	if (cover) {
+		const multipart = multipartCover(cover);
+		options.qs = coverQuery(cover.aiGenerated);
+		options.body = multipart.body;
+		options.headers = { ...options.headers, 'Content-Type': multipart.contentType };
+	} else if (endpoint.method === 'GET') options.qs = data;
 	else {
 		options.qs = { aid: 2503, app_name: 'muye_novel' };
 		options.body = formEncode(data);
@@ -272,15 +282,21 @@ export async function authorRequest(
 					context,
 					credentialName,
 					{
-						url: `${connection.origin}/api/author-request`,
+						url: `${connection.origin}${cover ? '/api/cover/upload' : '/api/author-request'}`,
 						method: 'POST',
-						body: {
-							path: endpoint.path,
-							method: endpoint.method,
-							query: formEncode(options.qs as IDataObject),
-							...(endpoint.method === 'GET' ? {} : { body: String(options.body) }),
-							timeout: settings.timeout,
-						},
+						body: cover
+							? {
+									imageBase64: cover.buffer.toString('base64'),
+									aiGenerated: cover.aiGenerated,
+									timeout: settings.timeout,
+								}
+							: {
+									path: endpoint.path,
+									method: endpoint.method,
+									query: formEncode(options.qs as IDataObject),
+									...(endpoint.method === 'GET' ? {} : { body: String(options.body) }),
+									timeout: settings.timeout,
+								},
 						json: true,
 						returnFullResponse: true,
 						disableFollowRedirect: true,

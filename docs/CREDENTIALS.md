@@ -1,6 +1,6 @@
 # 番茄作者凭据：Cookie、CSRF Token 和 User Agent 怎么填
 
-在 n8n 新建 **Fanqie Author Session API** 凭据。这三个字段取自你已经登录的番茄作者后台的一条网络请求，按下面步骤复制即可。所有输入框选择 **固定值 / Fixed**。
+在 n8n 新建 **番茄作者 · 手动登录态（Fanqie） API** 凭据。这三个字段取自你已经登录的番茄作者后台的一条网络请求，按下面步骤复制即可。所有输入框选择 **固定值 / Fixed**。
 
 如果只想查看节点的接口目录，执行 **Advanced API → Inspect Catalog** 即可，不需要填写凭据。
 

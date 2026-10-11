@@ -1,7 +1,13 @@
 import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { LoginError } from './errors.mjs';
-import { ACCOUNT_PATH, ACCOUNT_QUERY, requestAuthor, validAccount } from './author.mjs';
+import {
+	ACCOUNT_PATH,
+	ACCOUNT_QUERY,
+	requestAuthor,
+	requestCoverUpload,
+	validAccount,
+} from './author.mjs';
 
 const assets = {
 	'/': ['index.html', 'text/html; charset=utf-8'],
@@ -39,7 +45,11 @@ async function readJson(req, maximum) {
 	}
 }
 
-export function createLoginServer(broker, authorRequest = requestAuthor) {
+export function createLoginServer(
+	broker,
+	authorRequest = requestAuthor,
+	coverUpload = requestCoverUpload,
+) {
 	const rates = new Map();
 	function rateLimit(req, label, maximum) {
 		const key = `${label}:${req.socket.remoteAddress}`;
@@ -133,6 +143,10 @@ export function createLoginServer(broker, authorRequest = requestAuthor) {
 				rateLimit(req, 'author', 1200);
 				const token = bearer(req);
 				const session = await broker.vault.get(token);
+				if (req.method === 'POST' && url.pathname === '/api/cover/upload') {
+					rateLimit(req, 'cover-upload', 12);
+					return json(200, await coverUpload(session, await readJson(req, 7 * 1024 * 1024)));
+				}
 				if (req.method === 'GET' && url.pathname === '/api/session/check') {
 					const result = await authorRequest(session, {
 						path: ACCOUNT_PATH,

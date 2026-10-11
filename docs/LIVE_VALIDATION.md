@@ -1,11 +1,13 @@
 # Live account validation
 
-Status: **QR connection and two read-only endpoints verified on 2026-10-11**. An account holder scanned the official QR, confirmed login, and returned to n8n. A native n8n execution then successfully called Account Get (one account item) and Book Get Many (an empty list). Other interfaces, nonempty pagination, writes, and encrypted income remain pending. No books, drafts, publications, account settings, or financial actions have been modified during development.
+Status: **QR connection, three read endpoints and cover upload verified by 2026-10-12**. An account holder scanned the official QR, confirmed login, and returned to n8n. Native n8n execution successfully called Account Get (one account item) and Book Get Many (an empty list). The same QR connection read book categories for both audiences and uploaded an unattached 600×800 test cover, receiving business code 0 and a real image URI/URL. Book/volume creation has automated flow tests; real book/chapter writes, nonempty pagination and encrypted income remain pending. No books, drafts, publications, account settings or financial actions were changed by these tests.
 
 Verified through the QR component bridge:
 
 - `GET /api/author/account/info/v0/`: business code 0 and a nonempty account object.
 - `GET /api/author/book/book_list/v0`: business code 0 and a successfully decoded empty list.
+- `GET /api/author/book/category_list/v0/`: business code 0, 182 categories for female audience (0) and 154 for male audience (1).
+- `POST /api/author/data/upload_pic_v2/v0/`: multipart PNG upload, HTTP 200, business code 0, and returned `pic_uri` / `pic_url`; AI-origin labeling parameters were included.
 
 Evidence retains only success status, item counts, and request methods/paths. An empty list does not validate nonempty pagination or book-specific operations.
 

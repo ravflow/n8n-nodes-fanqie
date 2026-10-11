@@ -1,0 +1,250 @@
+{
+	"name": "Fanqie Author - AI Cover and Create Book",
+	"nodes": [
+		{
+			"id": "start",
+			"name": "Run Manually",
+			"type": "n8n-nodes-base.manualTrigger",
+			"typeVersion": 1,
+			"position": [0, 0],
+			"parameters": {}
+		},
+		{
+			"id": "settings",
+			"name": "Book Settings",
+			"type": "n8n-nodes-base.set",
+			"typeVersion": 3.4,
+			"position": [220, 0],
+			"parameters": {
+				"assignments": {
+					"assignments": [
+						{
+							"id": "title",
+							"name": "book_name",
+							"type": "string",
+							"value": ""
+						},
+						{
+							"id": "author",
+							"name": "author_name",
+							"type": "string",
+							"value": ""
+						},
+						{
+							"id": "synopsis",
+							"name": "abstract",
+							"type": "string",
+							"value": ""
+						},
+						{
+							"id": "audience",
+							"name": "gender",
+							"type": "number",
+							"value": 1
+						},
+						{
+							"id": "categories",
+							"name": "category_ids",
+							"type": "array",
+							"value": "[]"
+						},
+						{
+							"id": "roles",
+							"name": "roles",
+							"type": "string",
+							"value": ""
+						},
+						{
+							"id": "art",
+							"name": "cover_description",
+							"type": "string",
+							"value": ""
+						},
+						{
+							"id": "volume",
+							"name": "volume_name",
+							"type": "string",
+							"value": "第一卷"
+						}
+					]
+				},
+				"options": {}
+			}
+		},
+		{
+			"id": "validate",
+			"name": "Check Book Settings",
+			"type": "n8n-nodes-base.code",
+			"typeVersion": 2,
+			"position": [440, 0],
+			"parameters": {
+				"jsCode": "const d=$input.first().json; for(const key of ['book_name','author_name','abstract','roles','cover_description']) { if(typeof d[key] !== 'string' || !d[key].trim()) throw new Error('Fill Book Settings: '+key); } if(!Array.isArray(d.category_ids)||!d.category_ids.length)throw new Error('Choose real category IDs from Fanqie Author > Book > Get Categories');if(d.abstract.trim().length<50||d.abstract.trim().length>500)throw new Error('Synopsis must contain 50–500 characters');return [{json:d}];"
+			}
+		},
+		{
+			"id": "image",
+			"name": "Generate Cover Image",
+			"type": "@n8n/n8n-nodes-langchain.openAi",
+			"typeVersion": 2.1,
+			"position": [660, 0],
+			"parameters": {
+				"resource": "image",
+				"operation": "generate",
+				"model": "gpt-image-1",
+				"prompt": "={{ \"为小说《\" + $json.book_name + \"》制作竖版封面。作者笔名：\" + $json.author_name + \"。画面：\" + $json.cover_description + \"。准确写出书名和作者笔名；不要其他文字或网站标志。上下各留15%安全边距，重要图形和文字放在中央，便于裁剪成3:4比例。\" }}",
+				"options": {
+					"size": "1024x1536",
+					"binaryPropertyOutput": "data"
+				}
+			}
+		},
+		{
+			"id": "resize",
+			"name": "Resize Cover",
+			"type": "n8n-nodes-base.editImage",
+			"typeVersion": 1,
+			"position": [880, 0],
+			"parameters": {
+				"operation": "resize",
+				"dataPropertyName": "data",
+				"width": 600,
+				"height": 800,
+				"resizeOption": "minimumArea",
+				"options": {
+					"format": "png"
+				}
+			}
+		},
+		{
+			"id": "crop",
+			"name": "Crop to 600 x 800",
+			"type": "n8n-nodes-base.editImage",
+			"typeVersion": 1,
+			"position": [1100, 0],
+			"parameters": {
+				"operation": "crop",
+				"dataPropertyName": "data",
+				"width": 600,
+				"height": 800,
+				"positionX": 0,
+				"positionY": 50,
+				"options": {
+					"format": "png"
+				}
+			}
+		},
+		{
+			"id": "create",
+			"name": "Upload Cover and Create Book",
+			"type": "n8n-nodes-fanqie.fanqieAuthor",
+			"typeVersion": 1.1,
+			"position": [1320, 0],
+			"parameters": {
+				"authentication": "qrLogin",
+				"resource": "book",
+				"operation": "createWithCover",
+				"bookName": "={{ $('Book Settings').item.json.book_name }}",
+				"gender": "={{ $('Book Settings').item.json.gender }}",
+				"category": "={{ $('Book Settings').item.json.category_ids }}",
+				"roles": "={{ $('Book Settings').item.json.roles }}",
+				"abstract": "={{ $('Book Settings').item.json.abstract }}",
+				"signPattern": 0,
+				"coverSource": "binary",
+				"binaryPropertyName": "data",
+				"imageOrigin": "ai",
+				"createInitialVolume": true,
+				"initialVolumeName": "={{ $('Book Settings').item.json.volume_name }}",
+				"parameters": "{}",
+				"options": {
+					"timeout": 60000,
+					"readRetries": 1
+				}
+			}
+		},
+		{
+			"id": "note",
+			"name": "Setup Notes",
+			"type": "n8n-nodes-base.stickyNote",
+			"typeVersion": 1,
+			"position": [200, -280],
+			"parameters": {
+				"content": "## 使用前配置\n1. 填写 Book Settings，分类 ID 可通过 Fanqie Author → Book → Get Categories 查询。\n2. 为生图节点选择你的图片服务凭据和受支持模型，为建书节点选择番茄作者凭据。\n3. 先执行到裁剪节点，检查封面文字和画面，再执行建书。\n4. 成功输出 book_id、volume_id、volume_name，可接 Draft → Create。\n\nPNG/JPEG ≤5 MiB。工作流默认未启用。接口超时先检查后台；不要盲目重跑建书节点。",
+				"width": 930,
+				"height": 250
+			}
+		}
+	],
+	"connections": {
+		"Run Manually": {
+			"main": [
+				[
+					{
+						"node": "Book Settings",
+						"type": "main",
+						"index": 0
+					}
+				]
+			]
+		},
+		"Book Settings": {
+			"main": [
+				[
+					{
+						"node": "Check Book Settings",
+						"type": "main",
+						"index": 0
+					}
+				]
+			]
+		},
+		"Check Book Settings": {
+			"main": [
+				[
+					{
+						"node": "Generate Cover Image",
+						"type": "main",
+						"index": 0
+					}
+				]
+			]
+		},
+		"Generate Cover Image": {
+			"main": [
+				[
+					{
+						"node": "Resize Cover",
+						"type": "main",
+						"index": 0
+					}
+				]
+			]
+		},
+		"Resize Cover": {
+			"main": [
+				[
+					{
+						"node": "Crop to 600 x 800",
+						"type": "main",
+						"index": 0
+					}
+				]
+			]
+		},
+		"Crop to 600 x 800": {
+			"main": [
+				[
+					{
+						"node": "Upload Cover and Create Book",
+						"type": "main",
+						"index": 0
+					}
+				]
+			]
+		}
+	},
+	"active": false,
+	"settings": {
+		"executionOrder": "v1"
+	},
+	"pinData": {}
+}

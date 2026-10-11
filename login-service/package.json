@@ -1,6 +1,6 @@
 {
 	"name": "fanqie-qr-login-service",
-	"version": "0.2.0",
+	"version": "0.3.0",
 	"private": true,
 	"type": "module",
 	"engines": {

@@ -47,6 +47,23 @@ export const operations: Operation[] = [
 	},
 	{
 		resource: 'book',
+		value: 'createWithCover',
+		name: 'Create With Cover',
+		action: 'Upload a cover and create a book',
+		path: '/api/author/book/create/v0/',
+		method: 'POST',
+		required: ['book_name', 'gender', 'category', 'abstract', 'roles'],
+	},
+	{
+		resource: 'media',
+		value: 'uploadCover',
+		name: 'Upload Cover',
+		action: 'Upload a cover image to the author workspace',
+		path: '/api/author/data/upload_pic_v2/v0/',
+		method: 'POST',
+	},
+	{
+		resource: 'book',
 		value: 'update',
 		name: 'Update',
 		action: 'Update a book',

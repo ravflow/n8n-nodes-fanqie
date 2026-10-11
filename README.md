@@ -2,36 +2,36 @@
 
 Fanqie Novel author workspace integration for self-hosted n8n. Manage books, volumes, drafts, chapter submissions, statistics, and income from one node.
 
-This alpha contains 46 curated operations and 365 endpoint candidates extracted from the public author frontend on 2026-10-11. QR connection, Account Get, and Book Get Many have been verified with one authenticated author account (the book query returned an empty list). Other interfaces, nonempty pagination, writes, and encrypted income remain pending live validation. Candidate coverage is not a claim that every historical route is currently available or successfully connected.
+This alpha contains 48 curated operations and 365 endpoint candidates extracted from the public author frontend on 2026-10-11. QR connection, Account Get, Book Get Many (an empty list), book categories, and cover upload have been verified with one authenticated author account. Book/volume creation has automated flow tests; live book/chapter writes, nonempty pagination, and encrypted income remain pending. Candidate coverage is not a claim that every historical route is currently available or successfully connected.
 
 This independent community package uses website session APIs. An official public API contract and compatibility guarantees have not been established.
 
 ## Install from npm
 
-Public release requires npm maintainer approval. The QR-enabled **0.1.1-alpha.4** source and local archive are available for self-hosted testing; do not assume a staged version is installable from the registry. Once published, install through **Settings → Community nodes → Install**:
+Public release requires npm maintainer approval. The QR-enabled **0.1.1-alpha.5** source and local archive are available for self-hosted testing; do not assume a staged version is installable from the registry. Once published, install through **Settings → Community nodes → Install**:
 
 ```text
-n8n-nodes-fanqie@0.1.1-alpha.4
+n8n-nodes-fanqie@0.1.1-alpha.5
 ```
 
 Search for **Fanqie Author** in the workflow editor after installation. The alpha uses an explicit version so it does not replace a stable npm `latest` release. This package has not been verified by n8n. Installation requires unverified community packages to be enabled; n8n Cloud availability depends on a separate verification review.
 
 ## Install a local archive
 
-Build an archive with `npm run build` and `npm pack`. Install `n8n-nodes-fanqie-0.1.1-alpha.4.tgz` in the n8n user's community-node directory, then restart n8n. The archive includes `login-service/` for deploying the optional QR component.
+Build an archive with `npm run build` and `npm pack`. Install `n8n-nodes-fanqie-0.1.1-alpha.5.tgz` in the n8n user's community-node directory, then restart n8n. The archive includes `login-service/` for deploying the optional QR component.
 
 For an npm deployment on Linux or macOS:
 
 ```sh
 mkdir -p ~/.n8n/nodes
 cd ~/.n8n/nodes
-npm install /absolute/path/n8n-nodes-fanqie-0.1.1-alpha.4.tgz
+npm install /absolute/path/n8n-nodes-fanqie-0.1.1-alpha.5.tgz
 ```
 
 For Docker, install as the container's `node` user:
 
 ```sh
-docker cp n8n-nodes-fanqie-0.1.1-alpha.4.tgz YOUR_N8N_CONTAINER:/tmp/fanqie.tgz
+docker cp n8n-nodes-fanqie-0.1.1-alpha.5.tgz YOUR_N8N_CONTAINER:/tmp/fanqie.tgz
 docker exec --user node YOUR_N8N_CONTAINER sh -lc 'mkdir -p /home/node/.n8n/nodes && cd /home/node/.n8n/nodes && npm install /tmp/fanqie.tgz'
 docker restart YOUR_N8N_CONTAINER
 ```
@@ -59,17 +59,24 @@ Website sessions are encrypted in the component. n8n stores only an opaque conne
 
 1. Sign in to your own [Fanqie Author Workspace](https://fanqienovel.com/main/writer/).
 2. Open developer tools, select Network, and open a successful `/api/author/...` request.
-3. In n8n, create **Fanqie Author Session API** credentials. Copy the complete `Cookie`, `X-Secsdk-Csrf-Token`, and matching `User-Agent` into the corresponding fields.
+3. In n8n, create **番茄作者 · 手动登录态（Fanqie） API** credentials. Copy the complete `Cookie`, `X-Secsdk-Csrf-Token`, and matching `User-Agent` into the corresponding fields.
 4. Test the credential, then execute **Account → Get**.
 
 Cookie and CSRF values are masked and stored by n8n's credential system. Keep them out of workflow JSON, source control, issue reports, and chat. Re-enter both fields when the session expires. The node uses the official `fanqienovel.com` origin with redirects disabled.
 
 Copy only the full header values, without the `Cookie:`, `X-Secsdk-Csrf-Token:`, or `User-Agent:` prefixes. The preset User Agent is not automatically read from your browser. If a successful request has no CSRF header, consult [the credential guide](docs/CREDENTIALS.md#找不到-cookie-或-csrf) before guessing a value.
 
+## Cover upload and book creation
+
+**[封面上传与自动建书教程](docs/COVER_AND_BOOK.md)**: Upload PNG/JPEG binary data or Base64 using **Media → Upload Cover**, or use **Book → Create With Cover** to validate the book details, upload the image, create the book and optionally create its first volume. AI images use the official AI-origin labeling parameters. Failed multi-step writes expose the cover/book IDs for recovery. Manual and QR credentials are supported.
+
+The included [AI-cover workflow](examples/ai-cover-and-create-book.json) connects a standard image generation node to cover processing and book creation. Choose your own image-generation and author credentials before running it.
+
 ## Operations
 
 - **Account**: get and update information.
-- **Book**: get many, get, create, update, delete, categories, submission groups, outline, visibility, recommendation status, and completion applications.
+- **Book**: get many, get, create, create with cover and optional first volume, update, delete, categories, submission groups, outline, visibility, recommendation status, and completion applications.
+- **Media**: upload a PNG/JPEG cover from binary data or Base64 and return the cover URI, with AI-origin labeling when selected.
 - **Volume**: get many, create, update, and delete.
 - **Draft**: get many, create and save, save existing, latest content, history, snapshots, and delete.
 - **Chapter**: get many, content and status, publish submission, scheduled submission, update schedule, search, and delete.
@@ -79,7 +86,7 @@ Copy only the full header values, without the `Cookie:`, `X-Secsdk-Csrf-Token:`,
 
 Required fields are exposed directly. **Parameters (JSON)** supplies additional fields such as `stats_type`, `stats_types`, or account settings. Advanced endpoint choices include known field names and source status; required fields and account entitlements are not inferred.
 
-Use strings for IDs. Plain-text chapters become escaped paragraph HTML. Choose HTML only for content already in the editor's expected format. Cover URIs must already exist in the workspace; a dedicated binary image-upload operation is not included in this release.
+Use strings for IDs. Plain-text chapters become escaped paragraph HTML. Choose HTML only for content already in the editor's expected format. Obtain cover URIs with **Media → Upload Cover**, or let **Book → Create With Cover** upload and pass the URI automatically.
 
 ## Draft and publication workflow
 

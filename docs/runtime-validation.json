@@ -1,15 +1,20 @@
 {
 	"n8nVersion": "2.42.6",
-	"packageVersion": "0.1.1-alpha.4",
+	"packageVersion": "0.1.1-alpha.5",
 	"registeredType": "n8n-nodes-fanqie.fanqieAuthor",
 	"status": "success",
 	"outputItems": 365,
-	"liveVerifiedCount": 2,
+	"liveVerifiedCount": 4,
 	"qrLoginVerified": true,
 	"managedQrDefaultsVerified": true,
-	"verifiedReadOperations": ["account.get", "book.getMany"],
+	"verifiedReadOperations": ["account.get", "book.getMany", "book.getCategories"],
 	"accountOutputItems": 1,
 	"bookOutputItems": 0,
 	"encryptedIncomeVerified": false,
-	"writesVerified": false
+	"writesVerified": false,
+	"coverUploadVerified": true,
+	"bookCreationVerified": false,
+	"volumeCreationVerified": false,
+	"verifiedWriteOperations": ["media.uploadCover"],
+	"automatedTests": 58
 }

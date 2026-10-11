@@ -26,6 +26,8 @@ import { findOperation } from './operations';
 import { nodeProperties } from './properties';
 import { qrConnection } from './qrConnection';
 import type { Endpoint, RequestSettings } from './types';
+import { categoryOptions, createBookWithCover, uploadCover } from './bookCreation';
+import type { BookCreationProgress } from './bookCreation';
 
 function toOutput(value: unknown, itemIndex: number): INodeExecutionData[] {
 	const list = Array.isArray(value) ? value : [value];
@@ -103,6 +105,19 @@ export class FanqieAuthor implements INodeType {
 			},
 		},
 		loadOptions: {
+			async getBookCategories(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
+				const gender = Number(this.getCurrentNodeParameter('gender') ?? 1);
+				return categoryOptions(
+					unwrapData(
+						await authorRequest(
+							this,
+							{ path: '/api/author/book/category_list/v0/', method: 'GET' },
+							{ gender },
+							{ timeout: 30000, readRetries: 1 },
+						),
+					),
+				);
+			},
 			async getEndpoints(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
 				const group = String(this.getCurrentNodeParameter('apiGroup') ?? '');
 				return endpoints
@@ -110,7 +125,7 @@ export class FanqieAuthor implements INodeType {
 					.map((endpoint) => ({
 						name: `${endpoint.name} · ${endpoint.method} ${endpoint.path}`,
 						value: endpoint.id,
-						description: `${endpoint.liveVerified ? 'Authenticated read verified' : 'Discovered, not live verified'}. Fields: ${endpoint.fields.join(', ') || 'inspect request schema'}.`,
+						description: `${endpoint.liveVerified ? 'Authenticated request verified' : 'Discovered, not live verified'}. Fields: ${endpoint.fields.join(', ') || 'inspect request schema'}.`,
 					}))
 					.sort((a, b) => a.name.localeCompare(b.name));
 			},
@@ -122,6 +137,7 @@ export class FanqieAuthor implements INodeType {
 		const output: INodeExecutionData[] = [];
 		for (let itemIndex = 0; itemIndex < items.length; itemIndex++) {
 			let createdItemId: string | undefined;
+			const bookProgress: BookCreationProgress = { stage: 'validate' };
 			try {
 				const resource = String(this.getNodeParameter('resource', itemIndex));
 				const operationName = String(this.getNodeParameter('operation', itemIndex));
@@ -155,6 +171,10 @@ export class FanqieAuthor implements INodeType {
 					this.getNodeParameter('parameters', itemIndex, '{}'),
 					'Parameters',
 				);
+				if (resource === 'media' && operationName === 'uploadCover') {
+					output.push(...toOutput(await uploadCover(this, itemIndex, settings), itemIndex));
+					continue;
+				}
 				if (resource === 'advanced') {
 					let endpoint: Pick<Endpoint, 'path' | 'method'>;
 					if (operationName === 'request') {
@@ -194,6 +214,16 @@ export class FanqieAuthor implements INodeType {
 					params[field] = this.getNodeParameter(property, itemIndex) as string;
 				}
 				validateRequired(params, operation.required);
+				if (resource === 'book' && operationName === 'createWithCover') {
+					params.sign_pattern = this.getNodeParameter('signPattern', itemIndex, 0) as number;
+					output.push(
+						...toOutput(
+							await createBookWithCover(this, itemIndex, params, settings, bookProgress),
+							itemIndex,
+						),
+					);
+					continue;
+				}
 				if (operation.recipe) {
 					const format = String(this.getNodeParameter('contentFormat', itemIndex, 'text'));
 					const usage = ['publish', 'schedule'].includes(operation.recipe)
@@ -303,12 +333,25 @@ export class FanqieAuthor implements INodeType {
 					);
 				else output.push(...toOutput(data, itemIndex));
 			} catch (error) {
-				const message = `${(error as Error).message}${createdItemId ? ` Draft ${createdItemId} was created. Resume with Draft > Save using this ID instead of creating another draft.` : ''}`;
+				const bookRecovery = bookProgress.book_id
+					? ` Book ${bookProgress.book_id} was created. Inspect Volume > Get Many and continue with that book ID; do not create the book again.`
+					: bookProgress.thumb_uri
+						? ` Cover ${bookProgress.thumb_uri} was uploaded. Check Book > Get Many before retrying; reuse this Cover URI if the book was not created.`
+						: '';
+				const message = `${(error as Error).message}${createdItemId ? ` Draft ${createdItemId} was created. Resume with Draft > Save using this ID instead of creating another draft.` : ''}${bookRecovery}`;
 				if (this.continueOnFail()) {
 					output.push({
 						json: {
 							error: message,
 							...(createdItemId ? { item_id: createdItemId, recovery: 'saveExistingDraft' } : {}),
+							...(bookProgress.thumb_uri
+								? {
+										...bookProgress,
+										recovery: bookProgress.book_id
+											? 'continueExistingBook'
+											: 'checkBookListThenReuseCover',
+									}
+								: {}),
 						},
 						pairedItem: { item: itemIndex },
 					});

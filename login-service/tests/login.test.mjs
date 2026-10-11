@@ -7,7 +7,7 @@ import { request as httpRequest } from 'node:http';
 import { LoginBroker, validateConfig } from '../src/broker.mjs';
 import { SessionVault, digest } from '../src/vault.mjs';
 import { createLoginServer } from '../src/http.mjs';
-import { requestAuthor, validateAuthorRequest } from '../src/author.mjs';
+import { requestAuthor, requestCoverUpload, validateAuthorRequest } from '../src/author.mjs';
 import { allowedBrowserUrl } from '../src/browser.mjs';
 import { readOfficialCsrf } from '../src/csrf.mjs';
 
@@ -16,6 +16,57 @@ const session = {
 	csrf: 'fake-csrf-value',
 	userAgent: 'Fixture Browser',
 };
+const coverPng = Buffer.from(
+	'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==',
+	'base64',
+);
+
+test('cover proxy fixes upstream, sends multipart and marks AI images', async () => {
+	const result = await requestCoverUpload(
+		session,
+		{ imageBase64: coverPng.toString('base64'), aiGenerated: true, timeout: 30000 },
+		async (url, options) => {
+			assert.equal(url.origin, 'https://fanqienovel.com');
+			assert.equal(url.pathname, '/api/author/data/upload_pic_v2/v0/');
+			assert.equal(url.searchParams.get('ai_label'), '1');
+			assert.equal(url.searchParams.get('blind_watermark'), 'ai_cover');
+			assert.equal(options.redirect, 'manual');
+			assert.equal(options.headers.Cookie, session.cookie);
+			assert.equal(options.headers['Content-Type'], undefined);
+			const image = options.body.get('file');
+			assert.equal(image.type, 'image/png');
+			assert.deepEqual(Buffer.from(await image.arrayBuffer()), coverPng);
+			return new Response(
+				JSON.stringify({
+					code: 0,
+					data: { pic_uri: 'image/result', pic_url: 'https://cdn.example/image.png' },
+				}),
+			);
+		},
+	);
+	assert.equal(result.statusCode, 200);
+});
+
+test('cover proxy rejects invalid, oversized and undeclared images before upstream', async () => {
+	let calls = 0;
+	for (const bad of [
+		{ imageBase64: 'https://evil.test/image.png', aiGenerated: true, timeout: 30000 },
+		{ imageBase64: coverPng.toString('base64'), timeout: 30000 },
+		{ imageBase64: 'A'.repeat(7 * 1024 * 1024), aiGenerated: true, timeout: 30000 },
+		{
+			imageBase64: Buffer.from('<svg></svg>').toString('base64'),
+			aiGenerated: true,
+			timeout: 30000,
+		},
+	])
+		await assert.rejects(
+			requestCoverUpload(session, bad, async () => {
+				calls++;
+			}),
+			/PNG/,
+		);
+	assert.equal(calls, 0);
+});
 const config = {
 	publicUrl: 'http://127.0.0.1:8789',
 	clientId: 'test-client',

@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.1-alpha.5 - 2026-10-12
+
+- Add Media > Upload Cover for n8n binary data and Base64 PNG/JPEG images, including AI-origin labeling through the official cover upload endpoint.
+- Add Book > Create With Cover with audience-specific categories, protagonist names, writing mode, optional first-volume creation, and reusable uploaded-cover URIs.
+- Validate cover size/type/dimensions and book fields before writes. Preserve cover and book IDs when a later step fails so workflows can recover without creating duplicates.
+- Support image uploads through both manual credentials and the QR component; the companion keeps cookies private and restricts uploads to the fixed author endpoint.
+- Document direct connections from image-generation nodes into cover upload and book creation.
+
 ## 0.1.1-alpha.4 - 2026-10-11
 
 - Add a self-hosted QR connection component that displays the official Fanqie login QR code and checks the author account before connecting.

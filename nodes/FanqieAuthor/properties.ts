@@ -9,6 +9,7 @@ export const resourceNames: Record<string, string> = {
 	chapter: 'Chapter',
 	draft: 'Draft',
 	income: 'Income',
+	media: 'Media · 封面',
 	statistics: 'Statistics',
 	volume: 'Volume',
 };
@@ -34,6 +35,31 @@ const labels: Record<string, string> = {
 };
 
 function fieldProperty(field: string, resource: string, operation: string): INodeProperties {
+	if (resource === 'book' && operation === 'createWithCover' && field === 'gender')
+		return {
+			displayName: 'Audience · 目标读者',
+			name: 'gender',
+			type: 'options',
+			default: 1,
+			required: true,
+			options: [
+				{ name: 'Male · 男频', value: 1 },
+				{ name: 'Female · 女频', value: 0 },
+			],
+			displayOptions: { show: { resource: ['book'], operation: ['createWithCover'] } },
+		};
+	if (resource === 'book' && operation === 'createWithCover' && field === 'category')
+		return {
+			displayName: 'Category Names or IDs',
+			name: 'category',
+			type: 'multiOptions',
+			default: [],
+			required: true,
+			typeOptions: { loadOptionsMethod: 'getBookCategories', loadOptionsDependsOn: ['gender'] },
+			description:
+				'Choose from the list, or specify IDs using an <a href="https://docs.n8n.io/code/expressions/">expression</a>',
+			displayOptions: { show: { resource: ['book'], operation: ['createWithCover'] } },
+		};
 	return {
 		displayName: labels[field] ?? humanize(field),
 		name: field.replace(/_([a-z])/g, (_, c: string) => c.toUpperCase()),
@@ -47,10 +73,12 @@ function fieldProperty(field: string, resource: string, operation: string): INod
 			: field === 'timer_time'
 				? 'An ISO date including timezone or a Unix timestamp in seconds'
 				: field === 'thumb_uri'
-					? 'A cover image URI already uploaded to the author workspace'
-					: field === 'start_date' || field === 'end_date'
-						? 'The API date string, for example YYYY-MM-DD'
-						: `The ${field.replaceAll('_', ' ')} for this operation`,
+					? 'Use thumb_uri from Media > Upload Cover, or choose Book > Create With Cover to upload automatically'
+					: field === 'roles'
+						? 'One or two protagonist names, separated by commas or as a JSON array. Each name is 1–5 characters.'
+						: field === 'start_date' || field === 'end_date'
+							? 'The API date string, for example YYYY-MM-DD'
+							: `The ${field.replaceAll('_', ' ')} for this operation`,
 		placeholder:
 			field === 'timer_time'
 				? '2026-10-12T08:00:00+08:00'
@@ -114,6 +142,112 @@ const properties: INodeProperties[] = [
 		noDataExpression: true,
 		options: Object.entries(resourceNames).map(([value, name]) => ({ name, value })),
 		default: 'book',
+	},
+];
+
+const coverOperations = {
+	show: { resource: ['media', 'book'], operation: ['uploadCover', 'createWithCover'] },
+};
+const coverProperties: INodeProperties[] = [
+	{
+		displayName: 'Cover Source',
+		name: 'coverSource',
+		type: 'options',
+		default: 'binary',
+		options: [
+			{ name: 'Binary Data', value: 'binary' },
+			{ name: 'Base64', value: 'base64' },
+		],
+		displayOptions: { show: { resource: ['media'], operation: ['uploadCover'] } },
+	},
+	{
+		displayName: 'Cover Source',
+		name: 'coverSource',
+		type: 'options',
+		default: 'binary',
+		options: [
+			{ name: 'Binary Data', value: 'binary' },
+			{ name: 'Base64', value: 'base64' },
+			{ name: 'Already Uploaded URI', value: 'uploadedUri' },
+		],
+		displayOptions: { show: { resource: ['book'], operation: ['createWithCover'] } },
+	},
+	{
+		displayName: 'Input Binary Field',
+		name: 'binaryPropertyName',
+		type: 'string',
+		default: 'data',
+		required: true,
+		description:
+			'The binary field containing the PNG or JPEG image from an image generation or download node',
+		displayOptions: { show: { ...coverOperations.show, coverSource: ['binary'] } },
+	},
+	{
+		displayName: 'Image Base64',
+		name: 'imageBase64',
+		type: 'string',
+		default: '',
+		required: true,
+		typeOptions: { rows: 3 },
+		description:
+			'PNG or JPEG Base64, optionally with a data URL prefix; maximum decoded size is 5 MiB',
+		displayOptions: { show: { ...coverOperations.show, coverSource: ['base64'] } },
+	},
+	{
+		displayName: 'Image Origin',
+		name: 'imageOrigin',
+		type: 'options',
+		default: 'ai',
+		required: true,
+		options: [
+			{ name: 'AI-Generated', value: 'ai' },
+			{ name: 'Original / Non-AI', value: 'original' },
+		],
+		description:
+			'AI-generated images are uploaded with the official AI label and watermark parameters',
+		displayOptions: { show: { ...coverOperations.show, coverSource: ['binary', 'base64'] } },
+	},
+	{
+		displayName: 'Cover URI',
+		name: 'thumbUri',
+		type: 'string',
+		default: '',
+		required: true,
+		description:
+			'The thumb_uri returned by Upload Cover; this lets a failed book creation reuse the uploaded image',
+		displayOptions: {
+			show: { resource: ['book'], operation: ['createWithCover'], coverSource: ['uploadedUri'] },
+		},
+	},
+	{
+		displayName: 'Writing Mode',
+		name: 'signPattern',
+		type: 'options',
+		default: 0,
+		options: [
+			{ name: 'Serial · 连载模式', value: 0 },
+			{ name: 'Completed Manuscript · 完本模式', value: 1 },
+		],
+		displayOptions: { show: { resource: ['book'], operation: ['createWithCover'] } },
+	},
+	{
+		displayName: 'Create Initial Volume',
+		name: 'createInitialVolume',
+		type: 'boolean',
+		default: false,
+		description:
+			'Whether to create the first volume after the book is created and return its ID for draft creation',
+		displayOptions: { show: { resource: ['book'], operation: ['createWithCover'] } },
+	},
+	{
+		displayName: 'Initial Volume Name',
+		name: 'initialVolumeName',
+		type: 'string',
+		default: '第一卷',
+		required: true,
+		displayOptions: {
+			show: { resource: ['book'], operation: ['createWithCover'], createInitialVolume: [true] },
+		},
 	},
 ];
 
@@ -194,6 +328,8 @@ for (const resource of Object.keys(resourceNames).filter((value) => value !== 'a
 		}
 	}
 }
+
+properties.push(...coverProperties);
 
 properties.push(
 	{

@@ -1,5 +1,6 @@
 import { LoginError } from './errors.mjs';
 import { validateSession } from './vault.mjs';
+import { decodeCover } from './image.mjs';
 
 export const AUTHOR_ORIGIN = 'https://fanqienovel.com';
 export const ACCOUNT_PATH = '/api/author/account/info/v0/';
@@ -76,6 +77,49 @@ export function validAccount(body) {
 export async function requestAuthor(session, input, fetcher = fetch) {
 	validateSession(session);
 	validateAuthorRequest(input);
+	return sendAuthorRequest(
+		session,
+		input,
+		fetcher,
+		input.body ?? '',
+		'application/x-www-form-urlencoded;charset=UTF-8',
+	);
+}
+
+export async function requestCoverUpload(session, input, fetcher = fetch) {
+	validateSession(session);
+	let image;
+	try {
+		image = decodeCover(input);
+	} catch {
+		throw new LoginError(
+			400,
+			'invalid_cover',
+			'请提供不超过 5 MiB 的有效 PNG/JPEG 封面及图片来源。',
+		);
+	}
+	const form = new FormData();
+	form.append('file', new Blob([image.buffer], { type: image.mimeType }), image.fileName);
+	return sendAuthorRequest(
+		session,
+		{
+			path: '/api/author/data/upload_pic_v2/v0/',
+			method: 'POST',
+			timeout: input.timeout,
+			query: new URLSearchParams({
+				aid: '2503',
+				app_name: 'muye_novel',
+				blind_watermark: input.aiGenerated ? 'ai_cover' : '',
+				watermark: input.aiGenerated ? 'true' : 'false',
+				ai_label: input.aiGenerated ? '1' : '',
+			}).toString(),
+		},
+		fetcher,
+		form,
+	);
+}
+
+async function sendAuthorRequest(session, input, fetcher, payload, contentType) {
 	const url = new URL(input.path, AUTHOR_ORIGIN);
 	url.search = input.query;
 	const cookie = cookiesFor(session, url, Date.now());
@@ -95,11 +139,9 @@ export async function requestAuthor(session, input, fetcher = fetch) {
 				'User-Agent': session.userAgent,
 				Origin: AUTHOR_ORIGIN,
 				Referer: `${AUTHOR_ORIGIN}/main/writer/`,
-				...(input.method === 'GET'
-					? {}
-					: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' }),
+				...(input.method === 'GET' || !contentType ? {} : { 'Content-Type': contentType }),
 			},
-			...(input.method === 'GET' ? {} : { body: input.body ?? '' }),
+			...(input.method === 'GET' ? {} : { body: payload }),
 		});
 		body = await boundedText(response);
 	} catch (error) {
