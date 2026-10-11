@@ -1,0 +1,10 @@
+{
+	"node": "n8n-nodes-fanqie.fanqieAuthor",
+	"nodeVersion": "1.0",
+	"codexVersion": "1.0",
+	"categories": ["Analytics", "Productivity"],
+	"resources": {
+		"credentialDocumentation": [{ "url": "https://fanqienovel.com/main/writer/" }],
+		"primaryDocumentation": [{ "url": "https://fanqienovel.com/main/writer/" }]
+	}
+}

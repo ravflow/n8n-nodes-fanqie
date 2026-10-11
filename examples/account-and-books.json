@@ -1,0 +1,63 @@
+{
+	"name": "Fanqie Author - Read Account and Books",
+	"nodes": [
+		{
+			"id": "manual",
+			"name": "Run Manually",
+			"type": "n8n-nodes-base.manualTrigger",
+			"typeVersion": 1,
+			"position": [200, 300],
+			"parameters": {}
+		},
+		{
+			"id": "account",
+			"name": "Read Account",
+			"parameters": {
+				"resource": "account",
+				"operation": "get",
+				"parameters": "{}",
+				"options": {}
+			},
+			"position": [440, 220],
+			"type": "n8n-nodes-fanqie.fanqieAuthor",
+			"typeVersion": 1
+		},
+		{
+			"id": "books",
+			"name": "Read Books",
+			"parameters": {
+				"resource": "book",
+				"operation": "getMany",
+				"returnAll": true,
+				"parameters": "{}",
+				"options": {}
+			},
+			"position": [440, 420],
+			"type": "n8n-nodes-fanqie.fanqieAuthor",
+			"typeVersion": 1
+		}
+	],
+	"connections": {
+		"Run Manually": {
+			"main": [
+				[
+					{
+						"node": "Read Account",
+						"type": "main",
+						"index": 0
+					},
+					{
+						"node": "Read Books",
+						"type": "main",
+						"index": 0
+					}
+				]
+			]
+		}
+	},
+	"active": false,
+	"settings": {
+		"executionOrder": "v1"
+	},
+	"tags": []
+}
