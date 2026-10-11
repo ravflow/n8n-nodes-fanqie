@@ -8,6 +8,8 @@
 
 管理员先完成下文的实例级连接配置。随后用户可自行新增 **番茄作者 · 扫码登录（Fanqie） OAuth2 API** 凭据，不用填写组件地址、Client ID 或 Client Secret。每个凭据只能绑定一个作者账号；不同作者请使用不同凭据。
 
+使用管理员配置的 n8n 主入口完成整个连接过程。如果 n8n 同时能通过局域网 IP 和域名打开，应从凭据页 **OAuth Redirect URL** 所对应的域名或 IP 进入 n8n，再点击连接。例如回调显示 `https://n8n.example.com/rest/oauth2-credential/callback`，就从 `https://n8n.example.com` 登录和连接。混用入口会让回调缺少原浏览器的登录 Cookie 或 OAuth 绑定 Cookie。
+
 1. 在 n8n 新增凭据，搜索 **番茄**，选择 **番茄作者 · 扫码登录（Fanqie） OAuth2 API**。填写便于识别的名称，然后点击 **Connect my account / 连接账号**。
 2. 新页面加载官方二维码。打开手机上的 **番茄小说**或**番茄作家助手**，使用 App 的扫一扫，扫描二维码并确认登录。
 3. 等待页面显示账号检查通过并自动返回 n8n。节点选择 **登录方式 → 扫码登录（推荐）**，再选择这个凭据。
@@ -32,17 +34,17 @@ chmod 600 .env
 
 编辑 `.env`：
 
-| 配置                     | 填写方式                                                                       |
-| ------------------------ | ------------------------------------------------------------------------------ |
-| `PUBLIC_URL`             | 组件的外部地址，例如 `https://fanqie-login.example.com`                        |
-| `CLIENT_ID`              | 自定标识，例如 `fanqie-n8n`                                                    |
-| `CLIENT_SECRET`          | 独立的随机密钥，至少 32 字符                                                   |
-| `SESSION_ENCRYPTION_KEY` | 32 个随机字节的 Base64 编码，保存好，重启时使用同一个值                        |
-| `REDIRECT_URIS`          | n8n 凭据页显示的 OAuth Redirect URL；必须完整一致，多个地址用英文逗号分隔      |
-| `BIND_ADDRESS`           | 默认 `127.0.0.1`，便于通过 HTTPS 反向代理访问                                  |
-| `ALLOW_INSECURE_HTTP`    | 公网保持 `false`；仅在可信局域网调试时设为 `true`，且地址必须为局域网或回环 IP |
-| `SESSION_TTL_HOURS`      | 组件保存连接的上限，默认 720 小时；番茄登录态可能更早失效                      |
-| `MAX_LOGIN_SESSIONS`     | 同时扫码人数，默认 2，范围 1–8                                                 |
+| 配置                     | 填写方式                                                                                                                    |
+| ------------------------ | --------------------------------------------------------------------------------------------------------------------------- |
+| `PUBLIC_URL`             | 组件的外部地址，例如 `https://fanqie-login.example.com`                                                                     |
+| `CLIENT_ID`              | 自定标识，例如 `fanqie-n8n`                                                                                                 |
+| `CLIENT_SECRET`          | 独立的随机密钥，至少 32 字符                                                                                                |
+| `SESSION_ENCRYPTION_KEY` | 32 个随机字节的 Base64 编码，保存好，重启时使用同一个值                                                                     |
+| `REDIRECT_URIS`          | n8n 凭据页显示的 OAuth Redirect URL；由实例的入口配置决定，不能只按当前浏览器地址猜测。必须完整一致，多个地址用英文逗号分隔 |
+| `BIND_ADDRESS`           | 默认 `127.0.0.1`，便于通过 HTTPS 反向代理访问                                                                               |
+| `ALLOW_INSECURE_HTTP`    | 公网保持 `false`；仅在可信局域网调试时设为 `true`，且地址必须为局域网或回环 IP                                              |
+| `SESSION_TTL_HOURS`      | 组件保存连接的上限，默认 720 小时；番茄登录态可能更早失效                                                                   |
+| `MAX_LOGIN_SESSIONS`     | 同时扫码人数，默认 2，范围 1–8                                                                                              |
 
 生成两项独立密钥，可以分别运行：
 
@@ -109,7 +111,8 @@ Client Secret 是登录组件的独立随机密钥，不使用 npm Token、GitHu
 ## 常见问题
 
 - **显示 Client ID/Secret 不匹配**：核对组件 `.env` 与 n8n 凭据，修改配置后重启组件。
-- **回调地址未登记**：复制 n8n 凭据页的完整 OAuth Redirect URL，更新 `REDIRECT_URIS` 后重启。
+- **回调地址未登记**：复制 n8n 凭据页的完整 OAuth Redirect URL，更新 `REDIRECT_URIS` 后重新创建组件容器（`docker compose up -d`）。仅 `docker compose restart` 不会载入新的 `.env`。自建 n8n 的回调通常取自 `N8N_EDITOR_BASE_URL`，它可能与当前浏览器使用的局域网 IP 不同。只登记实际使用的精确回调地址，不使用通配符。
+- **扫码后提示从不同浏览器发起或 Unauthorized**：回到 OAuth Redirect URL 对应的 n8n 主入口，登录后重新点连接。连接前后使用同一个浏览器和同一个 n8n 域名/IP；不要关闭浏览器绑定、Cookie 或回调认证检查来规避错误。
 - **一直在准备二维码**：检查服务器能否访问番茄官网和官方资源域名，以及容器内存。组件仅允许官方站点相关域名的 HTTPS 请求。
 - **扫码后提示需要额外验证**：查看手机提示；本版本不提供远程验证码操作界面。重新连接仍失败时，需要管理员排查该账号和服务器环境。
 - **已登录但作者凭据不完整**：确认页面成功加载官方 SecSDK，且 CSRF 握手未被网络或平台验证阻断。组件不会接受 SDK 的 `DOWNGRADE` 降级标记，也不会用其他 Cookie 猜测替代 CSRF。
