@@ -8,30 +8,30 @@ This independent community package uses website session APIs. An official public
 
 ## Install from npm
 
-The public alpha version is **0.1.1-alpha.1**. Self-hosted n8n users can open **Settings → Community nodes → Install** and enter:
+After maintainer approval on npm, the **0.1.1-alpha.2** alpha can be installed by self-hosted n8n users through **Settings → Community nodes → Install**:
 
 ```text
-n8n-nodes-fanqie@0.1.1-alpha.1
+n8n-nodes-fanqie@0.1.1-alpha.2
 ```
 
 Search for **Fanqie Author** in the workflow editor after installation. The alpha uses an explicit version so it does not replace a stable npm `latest` release. This package has not been verified by n8n. Installation requires unverified community packages to be enabled; n8n Cloud availability depends on a separate verification review.
 
 ## Install a local archive
 
-Build an archive with `npm run build` and `npm pack`. Install `n8n-nodes-fanqie-0.1.1-alpha.1.tgz` in the n8n user's community-node directory, then restart n8n.
+Build an archive with `npm run build` and `npm pack`. Install `n8n-nodes-fanqie-0.1.1-alpha.2.tgz` in the n8n user's community-node directory, then restart n8n.
 
 For an npm deployment on Linux or macOS:
 
 ```sh
 mkdir -p ~/.n8n/nodes
 cd ~/.n8n/nodes
-npm install /absolute/path/n8n-nodes-fanqie-0.1.1-alpha.1.tgz
+npm install /absolute/path/n8n-nodes-fanqie-0.1.1-alpha.2.tgz
 ```
 
 For Docker, install as the container's `node` user:
 
 ```sh
-docker cp n8n-nodes-fanqie-0.1.1-alpha.1.tgz YOUR_N8N_CONTAINER:/tmp/fanqie.tgz
+docker cp n8n-nodes-fanqie-0.1.1-alpha.2.tgz YOUR_N8N_CONTAINER:/tmp/fanqie.tgz
 docker exec --user node YOUR_N8N_CONTAINER sh -lc 'mkdir -p /home/node/.n8n/nodes && cd /home/node/.n8n/nodes && npm install /tmp/fanqie.tgz'
 docker restart YOUR_N8N_CONTAINER
 ```
@@ -111,7 +111,7 @@ The packed community package was also installed into an isolated n8n 2.42.6 inst
 
 ## Publishing
 
-The [public source repository](https://github.com/ravflow/n8n-nodes-fanqie) includes CI and a GitHub Actions publishing workflow. Version tags must match `package.json`. Alpha versions publish to the `alpha` dist-tag with npm provenance; stable versions publish to `latest`. The first release can use the `ravflow` organization's shared `NPM_TOKEN` secret. Manually running the Publish workflow checks this authorization without publishing. See [the publishing guide](docs/PUBLISHING.md) for the first-release bootstrap and npm Trusted Publishing setup.
+The [public source repository](https://github.com/ravflow/n8n-nodes-fanqie) includes CI and a GitHub Actions publishing workflow. Version tags must match `package.json`. Tagged releases are staged on npm with provenance and require a maintainer's two-factor approval before public installation. Alpha versions use the `alpha` dist-tag; stable versions use `latest`. The workflow can use the `ravflow` organization's shared `NPM_TOKEN` without bypassing two-factor authentication. Manually running the Publish workflow checks this authorization without uploading. See [the publishing guide](docs/PUBLISHING.md) for staged approval and npm Trusted Publishing setup.
 
 Live account validation and encrypted income support are required before claiming a complete author-backend integration or promoting this alpha to a stable release. n8n verification is a separate review and has not been granted.
 

@@ -74,9 +74,9 @@ jobs:
       - name: Inspect package contents
         run: npm pack --dry-run
 
-      - name: Publish to npm
+      - name: Stage package for npm approval
         if: github.event_name == 'push'
-        run: npm publish --access public --provenance --tag "$DIST_TAG"
+        run: npm stage publish --access public --provenance --tag "$DIST_TAG"
         env:
           DIST_TAG: ${{ steps.release.outputs.dist_tag }}
           RELEASE_MODE: 'true'
@@ -85,7 +85,7 @@ jobs:
 
       - name: Check publishing without uploading a package
         if: github.event_name == 'workflow_dispatch'
-        run: npm publish --dry-run --access public --provenance=false --tag "$DIST_TAG"
+        run: npm stage publish --dry-run --access public --provenance=false --tag "$DIST_TAG"
         env:
           DIST_TAG: ${{ steps.release.outputs.dist_tag }}
           RELEASE_MODE: 'true'

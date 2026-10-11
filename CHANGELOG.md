@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.1-alpha.2 - 2026-10-11
+
+- Stage tagged packages on npm with GitHub provenance and maintainer approval.
+- Support shared organization tokens without bypassing two-factor authentication.
+- Document the initial placeholder package and the final approval step.
+- Retain the experimental API status and pending live account/income validation.
+
 ## 0.1.1-alpha.1 - 2026-10-11
 
 - Prepare the first public alpha with accurate integration limitations.
