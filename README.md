@@ -111,7 +111,7 @@ The packed community package was also installed into an isolated n8n 2.42.6 inst
 
 ## Publishing
 
-The [public source repository](https://github.com/tamseno/n8n-nodes-fanqie) includes CI and a GitHub Actions publishing workflow. Version tags must match `package.json`. Alpha versions publish to the `alpha` dist-tag with npm provenance; stable versions publish to `latest`. See [the publishing guide](docs/PUBLISHING.md) for the first-release bootstrap and npm Trusted Publishing setup.
+The [public source repository](https://github.com/ravflow/n8n-nodes-fanqie) includes CI and a GitHub Actions publishing workflow. Version tags must match `package.json`. Alpha versions publish to the `alpha` dist-tag with npm provenance; stable versions publish to `latest`. The first release can use the `ravflow` organization's shared `NPM_TOKEN` secret. Manually running the Publish workflow checks this authorization without publishing. See [the publishing guide](docs/PUBLISHING.md) for the first-release bootstrap and npm Trusted Publishing setup.
 
 Live account validation and encrypted income support are required before claiming a complete author-backend integration or promoting this alpha to a stable release. n8n verification is a separate review and has not been granted.
 

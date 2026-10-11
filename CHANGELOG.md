@@ -6,6 +6,8 @@
 - Add public repository metadata and registry installation instructions.
 - Validate tagged releases and publish from GitHub Actions with provenance.
 - Support npm Trusted Publishing and an initial publishing-token bootstrap.
+- Move the public repository to `ravflow` and use its shared publishing secret.
+- Add a manual authorization check and publishing dry-run before the first release.
 - Keep live author-account validation and encrypted income support pending.
 
 ## 0.1.0 - 2026-10-11

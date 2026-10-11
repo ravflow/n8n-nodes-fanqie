@@ -1,6 +1,6 @@
 # Public publishing
 
-Repository: `tamseno/n8n-nodes-fanqie`.
+Repository: `ravflow/n8n-nodes-fanqie`.
 Package: `n8n-nodes-fanqie`.
 First public version: `0.1.1-alpha.1`.
 
@@ -10,9 +10,9 @@ The current alpha has not been published to npm. Package build, lint, and mock t
 
 1. Use an npm account that will own this public package. Complete npm's account verification and publishing authentication requirements.
 2. For this new unscoped package, create a short-lived npm granular access token that can create and publish packages. Select **Read and write (publish and stage)** and enable **Bypass 2FA** for the non-interactive GitHub Actions publish. A token restricted to existing selected packages cannot create this new package; use npm's appropriate new-package access. See [npm token configuration](https://docs.npmjs.com/creating-and-viewing-access-tokens/).
-3. Store the token directly in this repository's **Settings → Secrets and variables → Actions**, under **NPM_TOKEN**. Never put the value in chat, workflow YAML, source code, or issue reports.
+3. Store the token directly in the `ravflow` organization's **Settings → Secrets and variables → Actions**, under **NPM_TOKEN**, with repository access set to **All repositories**. Organization-owned projects can share this secret. The token name on npm can be `github-actions-publish`; it is only a descriptive label. Never put the value in chat, workflow YAML, source code, or issue reports.
 4. Confirm CI passes, `package.json` and `package-lock.json` versions match, and the release notes describe the actual validated scope.
-5. Push the matching version tag:
+5. Manually run the **Publish** workflow on `main` to verify that the shared secret is available and npm authentication works. This runs a publishing dry-run only. After it succeeds, push the matching version tag:
 
 ```sh
 git tag 0.1.1-alpha.1
@@ -33,7 +33,7 @@ Use the exact prerelease version when installing from n8n's community-node setti
 
 After the package exists, open its npm settings and add a GitHub Actions Trusted Publisher:
 
-- Organization or user: `tamseno`
+- Organization or user: `ravflow`
 - Repository: `n8n-nodes-fanqie`
 - Workflow filename: `publish.yml`
 - Environment: leave empty for the included workflow
@@ -41,7 +41,7 @@ After the package exists, open its npm settings and add a GitHub Actions Trusted
 
 The current npm default can allow only `npm stage publish`; explicitly enabling direct publishing is necessary for this workflow. See [npm Trusted Publishing](https://docs.npmjs.com/trusted-publishers/).
 
-Validate the first OIDC publication within npm's stated setup expiry. Once OIDC succeeds, remove the repository's bootstrap **NPM_TOKEN** secret and revoke the corresponding token in npm. Subsequent tagged releases use short-lived OIDC authentication and retain provenance.
+Validate the first OIDC publication within npm's stated setup expiry. Once OIDC succeeds, this package can publish without the shared **NPM_TOKEN**. Before removing or revoking an organization-wide token, migrate any other projects that still use it. Subsequent tagged releases use short-lived OIDC authentication and retain provenance.
 
 Use `npm run release` for later interactive version bumps, changelog updates, commits, and tags. Keep the changelog's scope and validation status accurate.
 
