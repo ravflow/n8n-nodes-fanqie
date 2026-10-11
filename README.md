@@ -8,7 +8,7 @@ This independent community package uses website session APIs. An official public
 
 ## Install from npm
 
-The first npm release is being prepared as **0.1.1-alpha.1** and is not yet published. After it is published, self-hosted n8n users can open **Settings → Community nodes → Install** and enter:
+The public alpha version is **0.1.1-alpha.1**. Self-hosted n8n users can open **Settings → Community nodes → Install** and enter:
 
 ```text
 n8n-nodes-fanqie@0.1.1-alpha.1

@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.1.1-alpha.1 - Unreleased
+## 0.1.1-alpha.1 - 2026-10-11
 
 - Prepare the first public alpha with accurate integration limitations.
 - Add public repository metadata and registry installation instructions.

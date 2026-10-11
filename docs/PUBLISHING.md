@@ -4,7 +4,7 @@ Repository: `ravflow/n8n-nodes-fanqie`.
 Package: `n8n-nodes-fanqie`.
 First public version: `0.1.1-alpha.1`.
 
-The current alpha has not been published to npm. Package build, lint, and mock tests pass, but author-account API validation and encrypted income support remain pending. Do not describe this version as a fully validated integration. Update this status after a successful registry publish.
+The alpha is distributed through npm by the tagged GitHub Actions workflow. Package build, lint, and mock tests pass, but author-account API validation and encrypted income support remain pending. Do not describe this version as a fully validated integration. Verify the actual registry version and provenance before announcing any release.
 
 ## First release
 
