@@ -8,30 +8,30 @@ This independent community package uses website session APIs. An official public
 
 ## Install from npm
 
-After maintainer approval on npm, the **0.1.1-alpha.3** alpha can be installed by self-hosted n8n users through **Settings → Community nodes → Install**:
+After maintainer approval on npm, the **0.1.1-alpha.2** alpha can be installed by self-hosted n8n users through **Settings → Community nodes → Install**:
 
 ```text
-n8n-nodes-fanqie@0.1.1-alpha.3
+n8n-nodes-fanqie@0.1.1-alpha.2
 ```
 
 Search for **Fanqie Author** in the workflow editor after installation. The alpha uses an explicit version so it does not replace a stable npm `latest` release. This package has not been verified by n8n. Installation requires unverified community packages to be enabled; n8n Cloud availability depends on a separate verification review.
 
 ## Install a local archive
 
-Build an archive with `npm run build` and `npm pack`. Install `n8n-nodes-fanqie-0.1.1-alpha.3.tgz` in the n8n user's community-node directory, then restart n8n.
+Build an archive with `npm run build` and `npm pack`. Install `n8n-nodes-fanqie-0.1.1-alpha.2.tgz` in the n8n user's community-node directory, then restart n8n.
 
 For an npm deployment on Linux or macOS:
 
 ```sh
 mkdir -p ~/.n8n/nodes
 cd ~/.n8n/nodes
-npm install /absolute/path/n8n-nodes-fanqie-0.1.1-alpha.3.tgz
+npm install /absolute/path/n8n-nodes-fanqie-0.1.1-alpha.2.tgz
 ```
 
 For Docker, install as the container's `node` user:
 
 ```sh
-docker cp n8n-nodes-fanqie-0.1.1-alpha.3.tgz YOUR_N8N_CONTAINER:/tmp/fanqie.tgz
+docker cp n8n-nodes-fanqie-0.1.1-alpha.2.tgz YOUR_N8N_CONTAINER:/tmp/fanqie.tgz
 docker exec --user node YOUR_N8N_CONTAINER sh -lc 'mkdir -p /home/node/.n8n/nodes && cd /home/node/.n8n/nodes && npm install /tmp/fanqie.tgz'
 docker restart YOUR_N8N_CONTAINER
 ```
@@ -51,18 +51,12 @@ For development, use Node.js 24 LTS, run `npm ci --ignore-scripts`, then `npm ru
 
 ## Credentials
 
-New node version **1.1** defaults to **Browser Login**. Your n8n administrator deploys the [self-hosted login service](docs/BROWSER_LOGIN.md) once and configures **Fanqie Author Browser Login OAuth2 API** credentials with its URL and client credentials. Click **Connect my account**, complete the official website login in the window that opens, and return automatically to n8n. No browser extension, developer tools, or Cookie/CSRF copying is needed.
-
-The login service uses an isolated remote browser for each connection and n8n's native OAuth credential callback to store the website session securely. It is an independent session bridge; an official Fanqie third-party OAuth interface has not been established. Reconnect through the same credential when the website session expires. The login service is a separate Docker deployment and adds no runtime browser dependency to the npm community package. Real account login remains to be validated.
-
-Existing node version **1** keeps manual-session behavior. Version 1.1 also supports **Manual Session** when needed:
-
 1. Sign in to your own [Fanqie Author Workspace](https://fanqienovel.com/main/writer/).
 2. Open developer tools, select Network, and open a successful `/api/author/...` request.
 3. In n8n, create **Fanqie Author Session API** credentials. Copy the complete `Cookie`, `X-Secsdk-Csrf-Token`, and matching `User-Agent` into the corresponding fields.
 4. Test the credential, then execute **Account → Get**.
 
-Both login modes use n8n's encrypted credential system. Keep session values out of workflow JSON, source control, issue reports, and chat. The node uses the official `fanqienovel.com` origin with redirects disabled.
+Cookie and CSRF values are masked and stored by n8n's credential system. Keep them out of workflow JSON, source control, issue reports, and chat. Re-enter both fields when the session expires. The node uses the official `fanqienovel.com` origin with redirects disabled.
 
 ## Operations
 

@@ -1,8 +1,0 @@
-node_modules
-.env
-tests
-*.log
-*.sqlite
-*.tgz
-connection-metadata.json
-README.md

@@ -1,12 +1,9 @@
 import { NodeConnectionTypes, NodeOperationError } from 'n8n-workflow';
 import type {
 	IDataObject,
-	ICredentialsDecrypted,
-	ICredentialTestFunctions,
 	IExecuteFunctions,
 	ILoadOptionsFunctions,
 	INodeExecutionData,
-	INodeCredentialTestResult,
 	INodePropertyOptions,
 	INodeType,
 	INodeTypeDescription,
@@ -15,7 +12,6 @@ import { endpoints } from './catalog';
 import {
 	authorRequest,
 	buildPublishPayload,
-	decodeResponse,
 	extractList,
 	fetchList,
 	parseObject,
@@ -25,7 +21,6 @@ import {
 } from './helpers';
 import { findOperation } from './operations';
 import { nodeProperties } from './properties';
-import { browserSession, sessionHeaders } from './session';
 import type { Endpoint, RequestSettings } from './types';
 
 function toOutput(value: unknown, itemIndex: number): INodeExecutionData[] {
@@ -45,7 +40,7 @@ export class FanqieAuthor implements INodeType {
 		name: 'fanqieAuthor',
 		icon: { light: 'file:fanqie.svg', dark: 'file:fanqie.dark.svg' },
 		group: ['transform'],
-		version: [1, 1.1],
+		version: 1,
 		usableAsTool: true,
 		subtitle: '={{$parameter["operation"] + ": " + $parameter["resource"]}}',
 		description: 'Manage Fanqie Novel author books, chapters, statistics, and income',
@@ -56,59 +51,13 @@ export class FanqieAuthor implements INodeType {
 			{
 				name: 'fanqieAuthorApi',
 				required: true,
-				displayOptions: {
-					show: { authentication: ['session'] },
-					hide: { resource: ['advanced'], operation: ['getCatalog'] },
-				},
-			},
-			{
-				name: 'fanqieAuthorOAuth2Api',
-				required: true,
-				displayOptions: {
-					show: { authentication: ['browser'] },
-					hide: { resource: ['advanced'], operation: ['getCatalog'] },
-				},
+				displayOptions: { hide: { resource: ['advanced'], operation: ['getCatalog'] } },
 			},
 		],
 		properties: nodeProperties,
 	};
 
 	methods = {
-		credentialTest: {
-			async testBrowserLogin(
-				this: ICredentialTestFunctions,
-				credential: ICredentialsDecrypted,
-			): Promise<INodeCredentialTestResult> {
-				try {
-					const session = browserSession(credential.data ?? {});
-					// eslint-disable-next-line @n8n/community-nodes/no-deprecated-workflow-functions -- The n8n credential-test context exposes only helpers.request, including on n8n 2.42.6.
-					const response = (await this.helpers.request({
-						uri: 'https://fanqienovel.com/api/author/account/info/v0/',
-						qs: { aid: 2503, app_name: 'muye_novel' },
-						headers: sessionHeaders(session),
-						method: 'GET',
-						followRedirect: false,
-						followAllRedirects: false,
-						resolveWithFullResponse: true,
-						json: false,
-						timeout: 30000,
-					})) as { statusCode: number; body: unknown; headers: Record<string, unknown> };
-					if (response.statusCode !== 200)
-						return {
-							status: 'Error',
-							message: 'Reconnect your author account to verify this session.',
-						};
-					decodeResponse(response.body, response.headers, [session.cookie, session.csrf]);
-					return { status: 'OK', message: 'The author session was accepted.' };
-				} catch {
-					return {
-						status: 'Error',
-						message:
-							'The author session could not be verified. Reconnect or complete website verification.',
-					};
-				}
-			},
-		},
 		loadOptions: {
 			async getEndpoints(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
 				const group = String(this.getCurrentNodeParameter('apiGroup') ?? '');

@@ -6,7 +6,6 @@ import type {
 	IHttpRequestOptions,
 } from 'n8n-workflow';
 import type { Endpoint, Operation, RequestSettings } from './types';
-import { browserSession, sessionHeaders } from './session';
 
 type Context = IExecuteFunctions | ILoadOptionsFunctions;
 export const API_ORIGIN = 'https://fanqienovel.com';
@@ -224,16 +223,8 @@ export async function authorRequest(
 ): Promise<IDataObject> {
 	assertAuthorPath(endpoint.path);
 	validateObject(params);
-	const authentication =
-		context.getNode().typeVersion < 1.1
-			? 'session'
-			: String(context.getNodeParameter('authentication', itemIndex, 'browser'));
-	const credentialType = authentication === 'browser' ? 'fanqieAuthorOAuth2Api' : 'fanqieAuthorApi';
-	const credentials = await context.getCredentials(credentialType);
-	const connectedSession = authentication === 'browser' ? browserSession(credentials) : undefined;
-	const secrets = connectedSession
-		? [connectedSession.cookie, connectedSession.csrf, String(credentials.clientSecret ?? '')]
-		: [String(credentials.cookieToken ?? ''), String(credentials.csrfToken ?? '')];
+	const credentials = await context.getCredentials('fanqieAuthorApi');
+	const secrets = [String(credentials.cookieToken ?? ''), String(credentials.csrfToken ?? '')];
 	const data: IDataObject = { aid: 2503, app_name: 'muye_novel', ...params };
 	const options: IHttpRequestOptions = {
 		url: `${API_ORIGIN}${endpoint.path}`,
@@ -244,10 +235,7 @@ export async function authorRequest(
 		json: false,
 		encoding: 'text',
 		sendCredentialsOnCrossOriginRedirect: false,
-		headers: {
-			Accept: 'application/json, text/plain, */*',
-			...(connectedSession ? sessionHeaders(connectedSession) : {}),
-		},
+		headers: { Accept: 'application/json, text/plain, */*' },
 	};
 	if (endpoint.method === 'GET') options.qs = data;
 	else {
@@ -266,16 +254,11 @@ export async function authorRequest(
 	for (let attempt = 0; ; attempt++) {
 		let response: { body: unknown; headers: Record<string, unknown>; statusCode: number };
 		try {
-			// The bridge uses OAuth for login only; Fanqie requests use the captured website session.
-			response = (
-				connectedSession
-					? await context.helpers.httpRequest(options)
-					: await context.helpers.httpRequestWithAuthentication.call(
-							context,
-							'fanqieAuthorApi',
-							options,
-						)
-			) as typeof response;
+			response = (await context.helpers.httpRequestWithAuthentication.call(
+				context,
+				'fanqieAuthorApi',
+				options,
+			)) as typeof response;
 		} catch (error) {
 			const object = error as {
 				statusCode?: number;

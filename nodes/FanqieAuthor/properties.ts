@@ -62,33 +62,6 @@ function fieldProperty(field: string, resource: string, operation: string): INod
 
 const properties: INodeProperties[] = [
 	{
-		displayName: 'Authentication',
-		name: 'authentication',
-		type: 'hidden',
-		default: 'session',
-		displayOptions: { show: { '@version': [1] } },
-	},
-	{
-		displayName: 'Authentication',
-		name: 'authentication',
-		type: 'options',
-		noDataExpression: true,
-		options: [
-			{
-				name: 'Browser Login',
-				value: 'browser',
-				description: 'Sign in through your self-hosted login service',
-			},
-			{
-				name: 'Manual Session',
-				value: 'session',
-				description: 'Provide an existing author session',
-			},
-		],
-		default: 'browser',
-		displayOptions: { show: { '@version': [{ _cnd: { gte: 1.1 } }] } },
-	},
-	{
 		displayName: 'Resource',
 		name: 'resource',
 		type: 'options',

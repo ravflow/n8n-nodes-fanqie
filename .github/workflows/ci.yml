@@ -41,6 +41,3 @@ jobs:
 
       - name: Run tests
         run: 'node --test tests/*.test.cjs'
-
-      - name: Test login service
-        run: 'node --test login-service/tests/*.test.mjs'
