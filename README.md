@@ -51,12 +51,16 @@ For development, use Node.js 24 LTS, run `npm ci --ignore-scripts`, then `npm ru
 
 ## Credentials
 
+**中文逐步教程：[Cookie、CSRF Token 和 User Agent 怎么填](docs/CREDENTIALS.md)**，包含浏览器操作、复制格式、凭据验证和常见问题。
+
 1. Sign in to your own [Fanqie Author Workspace](https://fanqienovel.com/main/writer/).
 2. Open developer tools, select Network, and open a successful `/api/author/...` request.
 3. In n8n, create **Fanqie Author Session API** credentials. Copy the complete `Cookie`, `X-Secsdk-Csrf-Token`, and matching `User-Agent` into the corresponding fields.
 4. Test the credential, then execute **Account → Get**.
 
 Cookie and CSRF values are masked and stored by n8n's credential system. Keep them out of workflow JSON, source control, issue reports, and chat. Re-enter both fields when the session expires. The node uses the official `fanqienovel.com` origin with redirects disabled.
+
+Copy only the full header values, without the `Cookie:`, `X-Secsdk-Csrf-Token:`, or `User-Agent:` prefixes. The preset User Agent is not automatically read from your browser. If a successful request has no CSRF header, consult [the credential guide](docs/CREDENTIALS.md#找不到-cookie-或-csrf) before guessing a value.
 
 ## Operations
 

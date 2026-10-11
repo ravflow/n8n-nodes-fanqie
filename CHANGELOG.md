@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- Add a Chinese walkthrough for copying session request headers, validating credentials, and troubleshooting missing or expired values.
+- Link credential documentation to the walkthrough and show setup instructions, field placeholders, and a clear session-test error in the credential editor.
+
 ## 0.1.1-alpha.2 - 2026-10-11
 
 - Stage tagged packages on npm with GitHub provenance and maintainer approval.
