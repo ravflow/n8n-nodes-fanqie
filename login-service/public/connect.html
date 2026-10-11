@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="zh-CN">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width,initial-scale=1" />
+		<title>连接番茄账号</title>
+		<link rel="stylesheet" href="/assets/style.css" />
+		<script type="module" src="/assets/app.js"></script>
+	</head>
+	<body>
+		<main class="connector">
+			<header>
+				<div class="heading">
+					<span class="mark">番</span>
+					<div>
+						<h1>连接番茄账号</h1>
+						<p>在下方番茄官网页面完成登录，成功后自动返回 n8n。</p>
+					</div>
+				</div>
+				<button id="cancel" class="quiet">取消</button>
+			</header>
+			<div class="status" role="status">
+				<span class="dot"></span><span id="status">正在打开登录页面…</span>
+			</div>
+			<div class="browser">
+				<div class="address">🔒 fanqienovel.com · 番茄作家专区</div>
+				<div class="viewport">
+					<img id="screen" width="1080" height="780" alt="番茄官网登录页面" draggable="false" />
+					<div id="loading">正在准备登录窗口…</div>
+					<textarea
+						id="keyboard"
+						aria-label="在番茄登录页输入"
+						autocomplete="off"
+						autocapitalize="off"
+						spellcheck="false"
+					></textarea>
+				</div>
+			</div>
+			<footer>
+				<p>支持官网提供的扫码、验证码及人工验证。登录态将自动保存到你的 n8n 凭据。</p>
+				<div class="actions">
+					<button id="reload" class="quiet">刷新页面</button
+					><button id="complete">我已登录，连接账号</button>
+				</div>
+			</footer>
+		</main>
+	</body>
+</html>

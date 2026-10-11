@@ -2,7 +2,7 @@
 
 Repository: `ravflow/n8n-nodes-fanqie`.
 Package: `n8n-nodes-fanqie`.
-First public alpha candidate: `0.1.1-alpha.2`.
+Current public alpha candidate: `0.1.1-alpha.3`.
 
 Tagged releases are built and staged by GitHub Actions with npm provenance. A maintainer approves the staged package with two-factor authentication before the version becomes publicly installable. Build, lint, and mock tests pass, but author-account API validation and encrypted income support remain pending. Do not describe this alpha as a fully validated integration.
 
@@ -15,8 +15,8 @@ Tagged releases are built and staged by GitHub Actions with npm provenance. A ma
 5. Push the matching version tag:
 
 ```sh
-git tag 0.1.1-alpha.2
-git push origin 0.1.1-alpha.2
+git tag 0.1.1-alpha.3
+git push origin 0.1.1-alpha.3
 ```
 
 The GitHub-hosted workflow uses Node.js 24, npm 12.2.0, lint, typecheck, build, tests, and provenance. It rejects mismatched tags. `RELEASE_MODE=true` permits the n8n CLI's prepublish guard within the controlled staging step.
@@ -26,7 +26,7 @@ The GitHub-hosted workflow uses Node.js 24, npm 12.2.0, lint, typecheck, build, 
 For a new package, npm first creates a public `0.0.0-stage` placeholder. This placeholder is not the working n8n node. The actual alpha and its contents stay private until maintainer approval. Only announce installation after checking the approved version:
 
 ```sh
-npm view n8n-nodes-fanqie@0.1.1-alpha.2 version repository dist-tags dist.attestations --json
+npm view n8n-nodes-fanqie@0.1.1-alpha.3 version repository dist-tags dist.attestations --json
 ```
 
 Use the exact alpha version in n8n's community-node settings. An alpha does not create a stable `latest` release.

@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.1-alpha.3 - 2026-10-11
+
+- Add Browser Login credentials and a self-hosted login service with isolated author login windows.
+- Connect n8n using one-time authorization codes, exact callback registration and S256 PKCE.
+- Capture the website session automatically and store it in n8n's encrypted credentials.
+- Default new node version 1.1 to Browser Login while preserving version 1 manual-session workflows.
+- Keep real author-account validation and encrypted income adaptation pending.
+
 ## 0.1.1-alpha.2 - 2026-10-11
 
 - Stage tagged packages on npm with GitHub provenance and maintainer approval.
