@@ -8,7 +8,7 @@ import type {
 
 export class FanqieAuthorApi implements ICredentialType {
 	name = 'fanqieAuthorApi';
-	displayName = 'Fanqie Author Session API';
+	displayName = '番茄作者 · 手动登录态（Fanqie） API';
 	icon: Icon = {
 		light: 'file:../nodes/FanqieAuthor/fanqie.svg',
 		dark: 'file:../nodes/FanqieAuthor/fanqie.dark.svg',

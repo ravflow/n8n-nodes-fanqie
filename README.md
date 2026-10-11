@@ -2,36 +2,36 @@
 
 Fanqie Novel author workspace integration for self-hosted n8n. Manage books, volumes, drafts, chapter submissions, statistics, and income from one node.
 
-This alpha contains 46 curated operations and 365 endpoint candidates extracted from the public author frontend on 2026-10-11. Build, lint, and automated tests validate package behavior. No endpoint has been verified with an authenticated author account. Candidate coverage is not a claim that every historical route is currently available or successfully connected.
+This alpha contains 46 curated operations and 365 endpoint candidates extracted from the public author frontend on 2026-10-11. QR connection, Account Get, and Book Get Many have been verified with one authenticated author account (the book query returned an empty list). Other interfaces, nonempty pagination, writes, and encrypted income remain pending live validation. Candidate coverage is not a claim that every historical route is currently available or successfully connected.
 
 This independent community package uses website session APIs. An official public API contract and compatibility guarantees have not been established.
 
 ## Install from npm
 
-After maintainer approval on npm, the **0.1.1-alpha.2** alpha can be installed by self-hosted n8n users through **Settings → Community nodes → Install**:
+Public release requires npm maintainer approval. The QR-enabled **0.1.1-alpha.4** source and local archive are available for self-hosted testing; do not assume a staged version is installable from the registry. Once published, install through **Settings → Community nodes → Install**:
 
 ```text
-n8n-nodes-fanqie@0.1.1-alpha.2
+n8n-nodes-fanqie@0.1.1-alpha.4
 ```
 
 Search for **Fanqie Author** in the workflow editor after installation. The alpha uses an explicit version so it does not replace a stable npm `latest` release. This package has not been verified by n8n. Installation requires unverified community packages to be enabled; n8n Cloud availability depends on a separate verification review.
 
 ## Install a local archive
 
-Build an archive with `npm run build` and `npm pack`. Install `n8n-nodes-fanqie-0.1.1-alpha.2.tgz` in the n8n user's community-node directory, then restart n8n.
+Build an archive with `npm run build` and `npm pack`. Install `n8n-nodes-fanqie-0.1.1-alpha.4.tgz` in the n8n user's community-node directory, then restart n8n. The archive includes `login-service/` for deploying the optional QR component.
 
 For an npm deployment on Linux or macOS:
 
 ```sh
 mkdir -p ~/.n8n/nodes
 cd ~/.n8n/nodes
-npm install /absolute/path/n8n-nodes-fanqie-0.1.1-alpha.2.tgz
+npm install /absolute/path/n8n-nodes-fanqie-0.1.1-alpha.4.tgz
 ```
 
 For Docker, install as the container's `node` user:
 
 ```sh
-docker cp n8n-nodes-fanqie-0.1.1-alpha.2.tgz YOUR_N8N_CONTAINER:/tmp/fanqie.tgz
+docker cp n8n-nodes-fanqie-0.1.1-alpha.4.tgz YOUR_N8N_CONTAINER:/tmp/fanqie.tgz
 docker exec --user node YOUR_N8N_CONTAINER sh -lc 'mkdir -p /home/node/.n8n/nodes && cd /home/node/.n8n/nodes && npm install /tmp/fanqie.tgz'
 docker restart YOUR_N8N_CONTAINER
 ```
@@ -45,11 +45,15 @@ docker cp scripts/register-fanqie-community-package.cjs YOUR_N8N_CONTAINER:/tmp/
 docker exec --user node YOUR_N8N_CONTAINER node /tmp/register-fanqie-community-package.cjs
 ```
 
-The helper expects the n8n application at `/usr/local/lib/node_modules/n8n`; set `FANQIE_N8N_APP_DIR` for another installation path. Refresh the community-node page after registration.
+The helper expects the n8n application at `/usr/local/lib/node_modules/n8n`; set `FANQIE_N8N_APP_DIR` for another installation path. Refresh the community-node page after registration. When upgrading an existing local registration, back up first and pass `-e FANQIE_REPLACE_REGISTERED_PACKAGE=true` to `docker exec`; this updates only this package through n8n's transactional repository.
 
 For development, use Node.js 24 LTS, run `npm ci --ignore-scripts`, then `npm run dev`. The official n8n CLI also supports an external development instance. This package has no runtime dependencies beyond the `n8n-workflow` peer supplied by n8n.
 
 ## Credentials
+
+**扫码方式：[番茄作者扫码连接教程](docs/QR_LOGIN.md)。** Administrators deploy the included login component and configure its client once through n8n's native credential overwrites. Users create **番茄作者 · 扫码登录（Fanqie） OAuth2 API**, click Connect, scan the official QR with Fanqie Novel or Fanqie Writer Assistant, and return automatically after the account check. New version 1.1 nodes default to QR login. Existing version 1 nodes retain manual authentication by default and now allow explicitly selecting QR login.
+
+Website sessions are encrypted in the component. n8n stores only an opaque connection token and sends author requests through the component's fixed-origin bridge. The component's OAuth2-compatible callback is not an official Fanqie developer OAuth grant. Additional interface compatibility still requires live validation.
 
 **中文逐步教程：[Cookie、CSRF Token 和 User Agent 怎么填](docs/CREDENTIALS.md)**，包含浏览器操作、复制格式、凭据验证和常见问题。
 
@@ -106,6 +110,7 @@ Import the JSON files in `examples/`. They read account/book data or inspect the
 npm run build
 npm run lint
 npm test
+npm run test:login
 npm pack
 ```
 

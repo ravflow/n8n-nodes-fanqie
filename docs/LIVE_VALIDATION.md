@@ -1,6 +1,13 @@
 # Live account validation
 
-Status: **pending author account access**. Automated tests use mock responses. No real books, drafts, publications, account settings, or financial actions have been modified during development.
+Status: **QR connection and two read-only endpoints verified on 2026-10-11**. An account holder scanned the official QR, confirmed login, and returned to n8n. A native n8n execution then successfully called Account Get (one account item) and Book Get Many (an empty list). Other interfaces, nonempty pagination, writes, and encrypted income remain pending. No books, drafts, publications, account settings, or financial actions have been modified during development.
+
+Verified through the QR component bridge:
+
+- `GET /api/author/account/info/v0/`: business code 0 and a nonempty account object.
+- `GET /api/author/book/book_list/v0`: business code 0 and a successfully decoded empty list.
+
+Evidence retains only success status, item counts, and request methods/paths. An empty list does not validate nonempty pagination or book-specific operations.
 
 ## Read-only checks
 

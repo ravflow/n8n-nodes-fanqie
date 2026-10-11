@@ -41,3 +41,6 @@ jobs:
 
       - name: Run tests
         run: 'node --test tests/*.test.cjs'
+
+      - name: Test QR login component
+        run: 'npm run test:login'

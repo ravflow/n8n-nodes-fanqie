@@ -1,0 +1,132 @@
+:root {
+	color-scheme: light;
+	font-family:
+		system-ui,
+		-apple-system,
+		'Segoe UI',
+		'Microsoft YaHei',
+		sans-serif;
+	color: #252735;
+	background: #f5f6fa;
+}
+* {
+	box-sizing: border-box;
+}
+body {
+	margin: 0;
+	min-height: 100dvh;
+	display: grid;
+	place-items: center;
+	padding: 24px;
+}
+.card {
+	width: min(100%, 480px);
+	padding: 36px;
+	border: 1px solid #e6e8ef;
+	border-radius: 24px;
+	background: white;
+	box-shadow: 0 12px 48px #1723400b;
+	text-align: center;
+}
+.brand {
+	font-size: 14px;
+	font-weight: 650;
+	color: #e44735;
+	letter-spacing: 1px;
+}
+h1 {
+	font-size: 26px;
+	margin: 14px 0 18px;
+	letter-spacing: -0.5px;
+}
+.intro {
+	font-size: 15px;
+	line-height: 1.8;
+	color: #606373;
+	margin: 0 0 24px;
+}
+.qr-box {
+	width: 256px;
+	height: 256px;
+	margin: auto;
+	display: grid;
+	place-items: center;
+	border: 1px solid #edf0f5;
+	border-radius: 14px;
+	background: #fff;
+	padding: 8px;
+}
+.qr-box img {
+	width: 238px;
+	height: 238px;
+	object-fit: contain;
+	image-rendering: pixelated;
+}
+#qr-placeholder {
+	color: #818592;
+	font-size: 14px;
+}
+.status {
+	font-size: 15px;
+	line-height: 1.6;
+	min-height: 48px;
+	margin: 20px 0 12px;
+}
+.status.error {
+	color: #c13225;
+}
+.actions {
+	display: flex;
+	justify-content: center;
+	gap: 10px;
+	flex-wrap: wrap;
+}
+button {
+	border: 0;
+	border-radius: 10px;
+	background: #ea4e3c;
+	color: white;
+	padding: 11px 16px;
+	font: inherit;
+	font-size: 14px;
+	cursor: pointer;
+}
+button:hover {
+	background: #d94030;
+}
+button:disabled {
+	opacity: 0.6;
+	cursor: wait;
+}
+.secondary {
+	background: #f0f2f7;
+	color: #646878;
+}
+.secondary:hover {
+	background: #e4e7ef;
+}
+.note {
+	margin: 28px 0 14px;
+	font-size: 12px;
+	line-height: 1.8;
+	color: #9296a4;
+}
+.official {
+	color: #747987;
+	font-size: 12px;
+	text-underline-offset: 3px;
+}
+[hidden] {
+	display: none !important;
+}
+@media (max-width: 480px) {
+	body {
+		padding: 16px;
+	}
+	.card {
+		padding: 28px 20px;
+	}
+	h1 {
+		font-size: 24px;
+	}
+}

@@ -70,6 +70,7 @@ jobs:
           npm run typecheck
           npm run build
           node --test tests/*.test.cjs
+          npm run test:login
 
       - name: Inspect package contents
         run: npm pack --dry-run

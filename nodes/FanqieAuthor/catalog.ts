@@ -11,7 +11,7 @@ export const endpoints: Endpoint[] = [
 		fields: [],
 		sourceFiles: ['async-main.93c6ad0a.js'],
 		versionEvidence: 'frontend-constant',
-		liveVerified: false,
+		liveVerified: true,
 	},
 	{
 		id: 'POST:/api/author/account/modify/v0/',
@@ -1195,7 +1195,7 @@ export const endpoints: Endpoint[] = [
 		fields: ['page_index', 'page_count'],
 		sourceFiles: ['async-main.93c6ad0a.js'],
 		versionEvidence: 'frontend-constant',
-		liveVerified: false,
+		liveVerified: true,
 	},
 	{
 		id: 'GET:/api/author/book/category_list/v0/',

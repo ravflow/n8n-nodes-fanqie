@@ -62,6 +62,52 @@ function fieldProperty(field: string, resource: string, operation: string): INod
 
 const properties: INodeProperties[] = [
 	{
+		displayName: 'Authentication · 登录方式',
+		name: 'authentication',
+		type: 'options',
+		noDataExpression: true,
+		options: [
+			{
+				name: '扫码登录（推荐）',
+				value: 'qrLogin',
+				description: 'Scan the official QR code through your self-hosted login component',
+			},
+			{
+				name: '手动登录态',
+				value: 'session',
+				description: 'Use existing Cookie and CSRF credentials',
+			},
+		],
+		default: 'session',
+		displayOptions: {
+			show: { '@version': [1] },
+			hide: { resource: ['advanced'], operation: ['getCatalog'] },
+		},
+	},
+	{
+		displayName: 'Authentication · 登录方式',
+		name: 'authentication',
+		type: 'options',
+		noDataExpression: true,
+		options: [
+			{
+				name: '扫码登录（推荐）',
+				value: 'qrLogin',
+				description: 'Scan the official QR code through your self-hosted login component',
+			},
+			{
+				name: '手动登录态',
+				value: 'session',
+				description: 'Use existing Cookie and CSRF credentials',
+			},
+		],
+		default: 'qrLogin',
+		displayOptions: {
+			show: { '@version': [{ _cnd: { gte: 1.1 } }] },
+			hide: { resource: ['advanced'], operation: ['getCatalog'] },
+		},
+	},
+	{
 		displayName: 'Resource',
 		name: 'resource',
 		type: 'options',

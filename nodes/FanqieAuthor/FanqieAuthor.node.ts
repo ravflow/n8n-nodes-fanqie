@@ -1,9 +1,12 @@
 import { NodeConnectionTypes, NodeOperationError } from 'n8n-workflow';
 import type {
 	IDataObject,
+	ICredentialsDecrypted,
+	ICredentialTestFunctions,
 	IExecuteFunctions,
 	ILoadOptionsFunctions,
 	INodeExecutionData,
+	INodeCredentialTestResult,
 	INodePropertyOptions,
 	INodeType,
 	INodeTypeDescription,
@@ -21,6 +24,7 @@ import {
 } from './helpers';
 import { findOperation } from './operations';
 import { nodeProperties } from './properties';
+import { qrConnection } from './qrConnection';
 import type { Endpoint, RequestSettings } from './types';
 
 function toOutput(value: unknown, itemIndex: number): INodeExecutionData[] {
@@ -40,7 +44,7 @@ export class FanqieAuthor implements INodeType {
 		name: 'fanqieAuthor',
 		icon: { light: 'file:fanqie.svg', dark: 'file:fanqie.dark.svg' },
 		group: ['transform'],
-		version: 1,
+		version: [1, 1.1],
 		usableAsTool: true,
 		subtitle: '={{$parameter["operation"] + ": " + $parameter["resource"]}}',
 		description: 'Manage Fanqie Novel author books, chapters, statistics, and income',
@@ -51,13 +55,53 @@ export class FanqieAuthor implements INodeType {
 			{
 				name: 'fanqieAuthorApi',
 				required: true,
-				displayOptions: { hide: { resource: ['advanced'], operation: ['getCatalog'] } },
+				displayOptions: {
+					show: { authentication: ['session'] },
+					hide: { resource: ['advanced'], operation: ['getCatalog'] },
+				},
+			},
+			{
+				name: 'fanqieAuthorQrLoginOAuth2Api',
+				required: true,
+				displayOptions: {
+					show: { authentication: ['qrLogin'] },
+					hide: { resource: ['advanced'], operation: ['getCatalog'] },
+				},
 			},
 		],
 		properties: nodeProperties,
 	};
 
 	methods = {
+		credentialTest: {
+			async testQrConnection(
+				this: ICredentialTestFunctions,
+				credential: ICredentialsDecrypted,
+			): Promise<INodeCredentialTestResult> {
+				try {
+					const connection = qrConnection(credential.data ?? {});
+					// eslint-disable-next-line @n8n/community-nodes/no-deprecated-workflow-functions -- n8n's credential-test context exposes helpers.request, including on the deployed n8n 2.42.6.
+					const response = (await this.helpers.request({
+						uri: `${connection.origin}/api/session/check`,
+						method: 'GET',
+						headers: { Authorization: `Bearer ${connection.accessToken}` },
+						followRedirect: false,
+						followAllRedirects: false,
+						resolveWithFullResponse: true,
+						json: true,
+						timeout: 30000,
+					})) as { statusCode: number; body: { connected?: boolean } };
+					if (response.statusCode === 200 && response.body?.connected === true)
+						return { status: 'OK', message: '番茄作者账号已连接，作者接口验证通过。' };
+				} catch {
+					/* Return a safe error without token or cookie data. */
+				}
+				return {
+					status: 'Error',
+					message: '尚未连接或登录态已失效，请点击连接按钮重新扫码；若组件无法访问，请联系管理员。',
+				};
+			},
+		},
 		loadOptions: {
 			async getEndpoints(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
 				const group = String(this.getCurrentNodeParameter('apiGroup') ?? '');
@@ -66,7 +110,7 @@ export class FanqieAuthor implements INodeType {
 					.map((endpoint) => ({
 						name: `${endpoint.name} · ${endpoint.method} ${endpoint.path}`,
 						value: endpoint.id,
-						description: 'Discovered, not live verified. Fields: ,.',
+						description: `${endpoint.liveVerified ? 'Authenticated read verified' : 'Discovered, not live verified'}. Fields: ${endpoint.fields.join(', ') || 'inspect request schema'}.`,
 					}))
 					.sort((a, b) => a.name.localeCompare(b.name));
 			},

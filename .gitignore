@@ -8,3 +8,5 @@ node_modules
 *.log
 .n8n/
 coverage/
+.test-login-*/
+login-service/data/

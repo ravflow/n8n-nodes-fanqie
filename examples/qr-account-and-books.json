@@ -1,0 +1,44 @@
+{
+	"name": "Fanqie Author QR Login - Account and Books",
+	"nodes": [
+		{
+			"parameters": {},
+			"id": "start-qr-account",
+			"name": "Manual Trigger",
+			"type": "n8n-nodes-base.manualTrigger",
+			"typeVersion": 1,
+			"position": [0, 0]
+		},
+		{
+			"parameters": { "authentication": "qrLogin", "resource": "account", "operation": "get" },
+			"id": "qr-read-account",
+			"name": "Read Author Account",
+			"type": "n8n-nodes-fanqie.fanqieAuthor",
+			"typeVersion": 1.1,
+			"position": [260, 0]
+		},
+		{
+			"parameters": {
+				"authentication": "qrLogin",
+				"resource": "book",
+				"operation": "getMany",
+				"returnAll": false,
+				"limit": 10
+			},
+			"id": "qr-read-books",
+			"name": "Read Author Books",
+			"type": "n8n-nodes-fanqie.fanqieAuthor",
+			"typeVersion": 1.1,
+			"position": [520, 0]
+		}
+	],
+	"connections": {
+		"Manual Trigger": { "main": [[{ "node": "Read Author Account", "type": "main", "index": 0 }]] },
+		"Read Author Account": {
+			"main": [[{ "node": "Read Author Books", "type": "main", "index": 0 }]]
+		}
+	},
+	"settings": { "executionOrder": "v1" },
+	"active": false,
+	"pinData": {}
+}

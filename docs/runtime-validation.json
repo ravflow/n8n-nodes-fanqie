@@ -1,7 +1,15 @@
 {
 	"n8nVersion": "2.42.6",
+	"packageVersion": "0.1.1-alpha.4",
 	"registeredType": "n8n-nodes-fanqie.fanqieAuthor",
 	"status": "success",
 	"outputItems": 365,
-	"allUnverified": true
+	"liveVerifiedCount": 2,
+	"qrLoginVerified": true,
+	"managedQrDefaultsVerified": true,
+	"verifiedReadOperations": ["account.get", "book.getMany"],
+	"accountOutputItems": 1,
+	"bookOutputItems": 0,
+	"encryptedIncomeVerified": false,
+	"writesVerified": false
 }

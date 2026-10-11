@@ -1,6 +1,15 @@
 # Changelog
 
-## Unreleased
+## 0.1.1-alpha.4 - 2026-10-11
+
+- Add a self-hosted QR connection component that displays the official Fanqie login QR code and checks the author account before connecting.
+- Store website sessions encrypted with AES-256-GCM in the component; n8n stores a separate opaque connection token.
+- Add an OAuth2-compatible callback with state, S256 PKCE, exact callback registration, and single-use codes. This is an internal component protocol, not a claim of official Fanqie OAuth access.
+- Route QR-connected author requests through the component, with fixed upstream origin, no redirects, bounded responses, and no write retries.
+- Preserve version 1 workflows and manual session credentials; existing nodes can explicitly select QR login, and new version 1.1 nodes default to it.
+- Name QR and manual credentials clearly in Chinese. Support server-managed client configuration so users can create a new QR credential and connect without entering service URLs or client secrets.
+- Cover grant isolation, expiry, replay, persistence, revocation, upstream boundaries, and legacy workflow compatibility in automated tests.
+- An account holder completed the QR flow; native n8n execution verified Account Get and Book Get Many (an empty list). Other interfaces, writes, and encrypted income remain pending live validation.
 
 - Add a Chinese walkthrough for copying session request headers, validating credentials, and troubleshooting missing or expired values.
 - Link credential documentation to the walkthrough and show setup instructions, field placeholders, and a clear session-test error in the credential editor.

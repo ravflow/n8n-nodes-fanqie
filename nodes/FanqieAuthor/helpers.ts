@@ -6,6 +6,7 @@ import type {
 	IHttpRequestOptions,
 } from 'n8n-workflow';
 import type { Endpoint, Operation, RequestSettings } from './types';
+import { qrConnection } from './qrConnection';
 
 type Context = IExecuteFunctions | ILoadOptionsFunctions;
 export const API_ORIGIN = 'https://fanqienovel.com';
@@ -223,8 +224,20 @@ export async function authorRequest(
 ): Promise<IDataObject> {
 	assertAuthorPath(endpoint.path);
 	validateObject(params);
-	const credentials = await context.getCredentials('fanqieAuthorApi');
-	const secrets = [String(credentials.cookieToken ?? ''), String(credentials.csrfToken ?? '')];
+	const defaultAuthentication = context.getNode().typeVersion < 1.1 ? 'session' : 'qrLogin';
+	const authentication =
+		'getInputData' in context
+			? String(context.getNodeParameter('authentication', itemIndex, defaultAuthentication))
+			: String(context.getCurrentNodeParameter('authentication') ?? defaultAuthentication);
+	if (!['session', 'qrLogin'].includes(authentication))
+		throw new Error('Choose a supported authentication method');
+	const credentialName =
+		authentication === 'qrLogin' ? 'fanqieAuthorQrLoginOAuth2Api' : 'fanqieAuthorApi';
+	const credentials = await context.getCredentials(credentialName);
+	const connection = authentication === 'qrLogin' ? qrConnection(credentials) : undefined;
+	const secrets = connection
+		? [connection.accessToken, String(credentials.clientSecret ?? '')]
+		: [String(credentials.cookieToken ?? ''), String(credentials.csrfToken ?? '')];
 	const data: IDataObject = { aid: 2503, app_name: 'muye_novel', ...params };
 	const options: IHttpRequestOptions = {
 		url: `${API_ORIGIN}${endpoint.path}`,
@@ -254,11 +267,47 @@ export async function authorRequest(
 	for (let attempt = 0; ; attempt++) {
 		let response: { body: unknown; headers: Record<string, unknown>; statusCode: number };
 		try {
-			response = (await context.helpers.httpRequestWithAuthentication.call(
-				context,
-				'fanqieAuthorApi',
-				options,
-			)) as typeof response;
+			if (connection) {
+				const bridge = (await context.helpers.httpRequestWithAuthentication.call(
+					context,
+					credentialName,
+					{
+						url: `${connection.origin}/api/author-request`,
+						method: 'POST',
+						body: {
+							path: endpoint.path,
+							method: endpoint.method,
+							query: formEncode(options.qs as IDataObject),
+							...(endpoint.method === 'GET' ? {} : { body: String(options.body) }),
+							timeout: settings.timeout,
+						},
+						json: true,
+						returnFullResponse: true,
+						disableFollowRedirect: true,
+						sendCredentialsOnCrossOriginRedirect: false,
+						timeout: Math.min(settings.timeout + 5000, 125000),
+					},
+				)) as {
+					statusCode: number;
+					body: { statusCode: number; body: string; headers: Record<string, unknown> };
+				};
+				if (
+					bridge.statusCode !== 200 ||
+					!bridge.body ||
+					!Number.isInteger(bridge.body.statusCode) ||
+					typeof bridge.body.body !== 'string' ||
+					!bridge.body.headers ||
+					typeof bridge.body.headers !== 'object'
+				)
+					throw new Error('Invalid login-service response');
+				response = bridge.body;
+			} else {
+				response = (await context.helpers.httpRequestWithAuthentication.call(
+					context,
+					credentialName,
+					options,
+				)) as typeof response;
+			}
 		} catch (error) {
 			const object = error as {
 				statusCode?: number;
@@ -289,6 +338,14 @@ export async function authorRequest(
 				{ message: `Fanqie request failed${status ? ` (HTTP ${status})` : ''}. ${detail}` },
 				{ itemIndex },
 			);
+		}
+		if (
+			retryableRead &&
+			[429, 502, 503, 504].includes(response.statusCode) &&
+			attempt < settings.readRetries
+		) {
+			await sleep(500 * 2 ** attempt);
+			continue;
 		}
 		if (response.statusCode < 200 || response.statusCode >= 300)
 			throw new NodeApiError(
