@@ -25,6 +25,7 @@ import {
 import { findOperation } from './operations';
 import { nodeProperties } from './properties';
 import { qrConnection } from './qrConnection';
+import { saveAuthorDraft } from './drafts';
 import type { Endpoint, RequestSettings } from './types';
 import { categoryOptions, createBookWithCover, uploadCover } from './bookCreation';
 import type { BookCreationProgress } from './bookCreation';
@@ -233,15 +234,30 @@ export class FanqieAuthor implements INodeType {
 				} else if (params.timer_time !== undefined)
 					params.timer_time = toUnixSeconds(params.timer_time);
 				if (operation.recipe === 'createDraft') {
-					const result = unwrapData(
-						await authorRequest(
-							this,
-							operation,
-							{ book_id: params.book_id, need_reuse: 0 },
-							settings,
-							itemIndex,
-						),
-					);
+					const suppliedId = this.getNodeParameter('existingDraftId', itemIndex, '');
+					const rawId =
+						suppliedId !== '' && suppliedId !== null ? suppliedId : (params.item_id ?? '');
+					const existingId = String(rawId).trim();
+					if (
+						(typeof rawId === 'number' && !Number.isSafeInteger(rawId)) ||
+						(existingId && !/^[1-9]\d{0,29}$/.test(existingId))
+					)
+						throw new NodeOperationError(
+							this.getNode(),
+							'Existing Draft ID must be the exact positive ID returned by the author workspace, supplied as a string',
+							{ itemIndex },
+						);
+					const result = existingId
+						? { item_id: existingId }
+						: unwrapData(
+								await authorRequest(
+									this,
+									operation,
+									{ book_id: params.book_id, need_reuse: 1 },
+									settings,
+									itemIndex,
+								),
+							);
 					const draft = parseObject(result, 'Created draft response');
 					if (!draft.item_id)
 						throw new NodeOperationError(
@@ -251,27 +267,22 @@ export class FanqieAuthor implements INodeType {
 						);
 					createdItemId = String(draft.item_id);
 					params.item_id = createdItemId;
-					const saved = unwrapData(
-						await authorRequest(
-							this,
-							{ path: '/api/author/publish_article/v0/', method: 'POST' },
-							params,
-							settings,
-							itemIndex,
-						),
-					);
+					const saved = await saveAuthorDraft(this, params, settings, itemIndex, !existingId);
 					output.push(
 						...toOutput(
 							{
-								item_id: createdItemId,
-								book_id: params.book_id,
-								submitted: true,
-								publicationVerified: false,
-								action: 'draftSaved',
-								data: saved as IDataObject,
+								...saved,
+								resumed: Boolean(existingId),
 							},
 							itemIndex,
 						),
+					);
+					continue;
+				}
+				if (operation.recipe === 'saveDraft') {
+					createdItemId = String(params.item_id);
+					output.push(
+						...toOutput(await saveAuthorDraft(this, params, settings, itemIndex), itemIndex),
 					);
 					continue;
 				}
@@ -321,11 +332,7 @@ export class FanqieAuthor implements INodeType {
 								submitted: true,
 								publicationVerified: false,
 								action:
-									operation.recipe === 'saveDraft'
-										? 'draftSaved'
-										: operation.recipe === 'schedule'
-											? 'scheduledSubmission'
-											: 'publicationSubmission',
+									operation.recipe === 'schedule' ? 'scheduledSubmission' : 'publicationSubmission',
 								data: data as IDataObject,
 							},
 							itemIndex,
@@ -338,7 +345,7 @@ export class FanqieAuthor implements INodeType {
 					: bookProgress.thumb_uri
 						? ` Cover ${bookProgress.thumb_uri} was uploaded. Check Book > Get Many before retrying; reuse this Cover URI if the book was not created.`
 						: '';
-				const message = `${(error as Error).message}${createdItemId ? ` Draft ${createdItemId} was created. Resume with Draft > Save using this ID instead of creating another draft.` : ''}${bookRecovery}`;
+				const message = `${(error as Error).message}${createdItemId ? ` Editor ID ${createdItemId} is available for recovery. Inspect its status before using Draft > Save; do not create another draft blindly.` : ''}${bookRecovery}`;
 				if (this.continueOnFail()) {
 					output.push({
 						json: {

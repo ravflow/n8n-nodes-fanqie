@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.1.1-alpha.7 - 2026-10-12
+
+- Select the draft saving protocol from the real editor state. Collaborative drafts use cover_article; legacy drafts retain publish_article with draft status. Never fall back from a failed collaborative save to the publishing endpoint.
+- Refuse Draft Save for published chapters or unknown editor modes. Read back the persisted draft state, title and HTML before reporting success.
+- Use collaborative document versions for updates; initialize only blank version-zero documents without an item_version, matching the official editor.
+- Allow Create to resume an explicit Existing Draft ID without allocating another ID; protect nonempty drafts returned by automatic reuse.
+- Report allocated editor IDs as recovery references rather than claiming that their content was saved. Recognize the live chapter list's item_list response field.
+- Verify one real collaborative draft and document the guarded recovery procedure.
+
 ## 0.1.1-alpha.6 - 2026-10-12
 
 - Fix Advanced API Request and Custom Request hiding authentication, credentials, JSON parameters and timeout/retry options under n8n's native display-condition evaluation. Keep Get Catalog offline and credential-free.

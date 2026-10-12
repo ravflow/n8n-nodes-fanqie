@@ -240,6 +240,15 @@ const coverProperties: INodeProperties[] = [
 		displayOptions: { show: { resource: ['book'], operation: ['createWithCover'] } },
 	},
 	{
+		displayName: 'Existing Draft ID',
+		name: 'existingDraftId',
+		type: 'string',
+		default: '',
+		description:
+			'Resume an unpublished draft using its exact ID, skipping creation. Leave empty for a new draft.',
+		displayOptions: { show: { resource: ['draft'], operation: ['create'] } },
+	},
+	{
 		displayName: 'Initial Volume Name',
 		name: 'initialVolumeName',
 		type: 'string',

@@ -2,36 +2,38 @@
 
 Fanqie Novel author workspace integration for self-hosted n8n. Manage books, volumes, drafts, chapter submissions, statistics, and income from one node.
 
-This alpha contains 48 curated operations and 365 endpoint candidates extracted from the public author frontend on 2026-10-11. QR connection, Account Get, Book Get Many (an empty list), book categories, and cover upload have been verified with one authenticated author account. Book/volume creation has automated flow tests; live book/chapter writes, nonempty pagination, and encrypted income remain pending. Candidate coverage is not a claim that every historical route is currently available or successfully connected.
+This alpha contains 48 curated operations and 365 endpoint candidates extracted from the public author frontend on 2026-10-11. QR connection, account/book reads, book categories, cover upload, and one collaborative draft save with persisted-content verification have been verified with one authenticated author account. Other writes, editor modes, nonempty pagination, and encrypted income remain pending. Candidate coverage is not a claim that every historical route is currently available or successfully connected.
+
+**Upgrade before using drafts:** versions through alpha.6 used the legacy saving endpoint for collaborative editors. The observed failure could leave the allocated record outside the draft box. Alpha.7 selects the editor protocol, refuses published records, verifies the stored draft, and supports recovery by ID. See [draft creation and recovery](docs/DRAFTS.md).
 
 This independent community package uses website session APIs. An official public API contract and compatibility guarantees have not been established.
 
 ## Install from npm
 
-Public release requires npm maintainer approval. The QR-enabled **0.1.1-alpha.6** source and local archive are available for self-hosted testing; do not assume a staged version is installable from the registry. Once published, install through **Settings → Community nodes → Install**:
+Public release requires npm maintainer approval. The QR-enabled **0.1.1-alpha.7** source and local archive are available for self-hosted testing; do not assume a staged version is installable from the registry. Once published, install through **Settings → Community nodes → Install**:
 
 ```text
-n8n-nodes-fanqie@0.1.1-alpha.6
+n8n-nodes-fanqie@0.1.1-alpha.7
 ```
 
 Search for **Fanqie Author** in the workflow editor after installation. The alpha uses an explicit version so it does not replace a stable npm `latest` release. This package has not been verified by n8n. Installation requires unverified community packages to be enabled; n8n Cloud availability depends on a separate verification review.
 
 ## Install a local archive
 
-Build an archive with `npm run build` and `npm pack`. Install `n8n-nodes-fanqie-0.1.1-alpha.6.tgz` in the n8n user's community-node directory, then restart n8n. The archive includes `login-service/` for deploying the optional QR component.
+Build an archive with `npm run build` and `npm pack`. Install `n8n-nodes-fanqie-0.1.1-alpha.7.tgz` in the n8n user's community-node directory, then restart n8n. The archive includes `login-service/` for deploying the optional QR component.
 
 For an npm deployment on Linux or macOS:
 
 ```sh
 mkdir -p ~/.n8n/nodes
 cd ~/.n8n/nodes
-npm install /absolute/path/n8n-nodes-fanqie-0.1.1-alpha.6.tgz
+npm install /absolute/path/n8n-nodes-fanqie-0.1.1-alpha.7.tgz
 ```
 
 For Docker, install as the container's `node` user:
 
 ```sh
-docker cp n8n-nodes-fanqie-0.1.1-alpha.6.tgz YOUR_N8N_CONTAINER:/tmp/fanqie.tgz
+docker cp n8n-nodes-fanqie-0.1.1-alpha.7.tgz YOUR_N8N_CONTAINER:/tmp/fanqie.tgz
 docker exec --user node YOUR_N8N_CONTAINER sh -lc 'mkdir -p /home/node/.n8n/nodes && cd /home/node/.n8n/nodes && npm install /tmp/fanqie.tgz'
 docker restart YOUR_N8N_CONTAINER
 ```

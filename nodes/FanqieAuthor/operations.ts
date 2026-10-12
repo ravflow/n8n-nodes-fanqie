@@ -207,7 +207,7 @@ export const operations: Operation[] = [
 		value: 'save',
 		name: 'Save',
 		action: 'Save an existing draft',
-		path: '/api/author/publish_article/v0/',
+		path: '/api/author/article/cover_article/v0/',
 		method: 'POST',
 		required: ['book_id', 'item_id', 'title', 'content', 'volume_id', 'volume_name'],
 		content: true,
@@ -265,7 +265,7 @@ export const operations: Operation[] = [
 			need_correction_feedback_num: 1,
 			sort: '',
 		},
-		listKeys: ['chapter_list', 'article_list', 'list'],
+		listKeys: ['item_list', 'chapter_list', 'article_list', 'list'],
 		pagination: true,
 	},
 	{

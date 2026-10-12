@@ -347,14 +347,17 @@ test('create draft runs create then save and preserves the returned long ID', as
 	};
 	const ctx = context(params, [
 		{ statusCode: 200, headers: {}, body: '{"code":0,"data":{"item_id":9999999999999999999}}' },
+		ok({ publish_status: 0, permission_switch: 0, title: '', content: '' }),
 		ok({}),
+		ok({ publish_status: 0, title: params.title, content: '<p>测试正文</p><p></p>' }),
 	]);
 	const [result] = await FanqieAuthor.prototype.execute.call(ctx);
-	assert.equal(ctx.calls.length, 2);
-	assert.equal(new URLSearchParams(ctx.calls[1].body).get('item_id'), '9999999999999999999');
-	assert.equal(new URLSearchParams(ctx.calls[1].body).get('publish_status'), '0');
+	assert.equal(ctx.calls.length, 4);
+	assert.equal(new URLSearchParams(ctx.calls[2].body).get('item_id'), '9999999999999999999');
+	assert.equal(new URLSearchParams(ctx.calls[2].body).get('publish_status'), '0');
 	assert.equal(result[0].json.item_id, '9999999999999999999');
 	assert.equal(result[0].json.publicationVerified, false);
+	assert.equal(result[0].json.draftVerified, true);
 });
 
 test('failure after creating a draft returns its ID for recovery without creating again', async () => {
@@ -369,11 +372,15 @@ test('failure after creating a draft returns its ID for recovery without creatin
 	};
 	const ctx = context(
 		params,
-		[ok({ item_id: '2' }), Object.assign(new Error('timeout'), { code: 'ETIMEDOUT' })],
+		[
+			ok({ item_id: '2' }),
+			ok({ publish_status: 0, permission_switch: 0, title: '', content: '' }),
+			Object.assign(new Error('timeout'), { code: 'ETIMEDOUT' }),
+		],
 		true,
 	);
 	const [result] = await FanqieAuthor.prototype.execute.call(ctx);
-	assert.equal(ctx.calls.length, 2);
+	assert.equal(ctx.calls.length, 3);
 	assert.equal(result[0].json.item_id, '2');
 	assert.equal(result[0].json.recovery, 'saveExistingDraft');
 });
