@@ -1,6 +1,6 @@
 {
 	"name": "n8n-nodes-fanqie",
-	"version": "0.1.1-alpha.5",
+	"version": "0.1.1-alpha.6",
 	"description": "Fanqie Novel author workspace integration for self-hosted n8n",
 	"license": "MIT",
 	"homepage": "https://github.com/ravflow/n8n-nodes-fanqie#readme",

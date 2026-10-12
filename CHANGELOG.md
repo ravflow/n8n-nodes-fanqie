@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.1-alpha.6 - 2026-10-12
+
+- Fix Advanced API Request and Custom Request hiding authentication, credentials, JSON parameters and timeout/retry options under n8n's native display-condition evaluation. Keep Get Catalog offline and credential-free.
+- Add regression checks using n8n's native parameter resolution for both node versions and both authentication methods.
+- Make QR HTTP 502 errors identify the two network hops and give the actual login-service host to add to proxy bypass lists, without echoing credentials.
+- Document proxy bypass configuration and checks from inside the n8n container for LAN QR services returning HTTP 502 through a global proxy.
+
 ## 0.1.1-alpha.5 - 2026-10-12
 
 - Add Media > Upload Cover for n8n binary data and Base64 PNG/JPEG images, including AI-origin labeling through the official cover upload endpoint.

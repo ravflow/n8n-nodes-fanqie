@@ -348,10 +348,18 @@ export async function authorRequest(
 					? 'The request redirected; check the author login session.'
 					: endpoint.method !== 'GET'
 						? 'The result is unknown. Inspect the workspace before retrying a write.'
-						: 'Check connectivity and the author session.';
+						: connection && status === 502
+							? 'Check connectivity from n8n to the QR login service and from the service to Fanqie.'
+							: 'Check connectivity and the author session.';
+			const proxyHint =
+				connection && status === 502
+					? ` If n8n uses a global proxy, add ${new URL(connection.origin).hostname} to NO_PROXY and no_proxy, then recreate the n8n container.`
+					: '';
 			throw new NodeApiError(
 				context.getNode(),
-				{ message: `Fanqie request failed${status ? ` (HTTP ${status})` : ''}. ${detail}` },
+				{
+					message: `Fanqie request failed${status ? ` (HTTP ${status})` : ''}. ${detail}${proxyHint}`,
+				},
 				{ itemIndex },
 			);
 		}

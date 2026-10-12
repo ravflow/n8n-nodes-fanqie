@@ -32,6 +32,74 @@ test('resolved defaults preserve old manual nodes and make new nodes use QR logi
 		assert.equal(params.authentication, expected);
 	}
 });
+
+test('native parameter resolution keeps credentials, query data and options for Advanced API calls', () => {
+	const definition = new FanqieAuthor().description;
+	for (const typeVersion of [1, 1.1]) {
+		for (const authentication of ['session', 'qrLogin']) {
+			for (const operation of ['request', 'customRequest']) {
+				const values = {
+					resource: 'advanced',
+					operation,
+					authentication,
+					endpointId: 'GET:/api/author/book/category_list/v0/',
+					apiPath: '/api/author/book/category_list/v0/',
+					httpMethod: 'GET',
+					parameters: '{"gender":0}',
+					options: { timeout: 15000, readRetries: 0 },
+				};
+				const node = { typeVersion };
+				const resolved = NodeHelpers.getNodeParameters(
+					definition.properties,
+					values,
+					true,
+					false,
+					node,
+				);
+				assert.equal(resolved.authentication, authentication);
+				assert.equal(resolved.parameters, values.parameters);
+				assert.deepEqual(resolved.options, values.options);
+				assert.equal(
+					operation === 'request' ? resolved.endpointId : resolved.apiPath,
+					operation === 'request' ? values.endpointId : values.apiPath,
+				);
+				const visible = definition.credentials.filter((item) =>
+					displayParameter(resolved, item, node),
+				);
+				assert.deepEqual(
+					visible.map((item) => item.name),
+					[authentication === 'session' ? 'fanqieAuthorApi' : 'fanqieAuthorQrLoginOAuth2Api'],
+				);
+			}
+		}
+	}
+});
+
+test('offline endpoint catalog still hides session credentials and request-only fields', () => {
+	const definition = new FanqieAuthor().description;
+	for (const typeVersion of [1, 1.1]) {
+		const node = { typeVersion };
+		const resolved = NodeHelpers.getNodeParameters(
+			definition.properties,
+			{
+				resource: 'advanced',
+				operation: 'getCatalog',
+				authentication: 'qrLogin',
+				parameters: '{"gender":0}',
+				options: { timeout: 15000 },
+			},
+			true,
+			false,
+			node,
+		);
+		for (const name of ['authentication', 'parameters', 'options'])
+			assert.equal(resolved[name], undefined);
+		assert.equal(
+			definition.credentials.filter((item) => displayParameter(resolved, item, node)).length,
+			0,
+		);
+	}
+});
 function context(
 	version = 1.1,
 	authentication = 'qrLogin',
@@ -96,6 +164,24 @@ test('QR writes retain form encoding and explicit method, and are not retried', 
 	assert.equal(ctx.calls.length, 1);
 	assert.equal(ctx.calls[0].body.method, 'POST');
 	assert.equal(new URLSearchParams(ctx.calls[0].body.body).get('title'), '中文 & 标题');
+});
+
+test('QR HTTP 502 explains both network hops and proxy bypass without echoing credentials', async () => {
+	const ctx = context();
+	ctx.helpers.httpRequestWithAuthentication = async () => {
+		throw Object.assign(new Error(`${token} ${credentials.clientSecret}`), { statusCode: 502 });
+	};
+	await assert.rejects(
+		authorRequest(ctx, { path: '/api/author/account/info/v0/', method: 'GET' }, {}, settings),
+		(error) => {
+			assert.match(error.message, /HTTP 502/);
+			assert.match(error.message, /from n8n to the QR login service/);
+			assert.match(error.message, /192\.168\.0\.100 to NO_PROXY and no_proxy/);
+			assert.equal(error.message.includes(token), false);
+			assert.equal(error.message.includes(credentials.clientSecret), false);
+			return true;
+		},
+	);
 });
 
 test('version 1 without an auth selection retains original manual credentials', async () => {

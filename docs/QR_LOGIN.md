@@ -96,6 +96,20 @@ Docker 部署将此变量加到 **n8n 容器**的环境变量中，重建该容�
 
 接下来用户新增扫码凭据即可直接连接。服务地址、Client ID、Client Secret 会由服务器注入并从表单隐藏。组件 `REDIRECT_URIS` 仍须与 n8n 凭据页显示的完整 **OAuth Redirect URL** 一致。
 
+### n8n 使用全局 HTTP 代理时
+
+如果 n8n 设置了 `HTTP_PROXY` / `HTTPS_PROXY`，应把登录组件地址中的主机名或 IP 加入 **n8n 容器**的 `NO_PROXY` 和 `no_proxy`，保留已有的直连名单。例如组件地址是 `http://192.168.1.10:8789`，在原名单后追加 `192.168.1.10`；如果使用 Docker 服务名访问，则追加该服务名。填写主机名或 IP，不填写整个 URL。
+
+两个变量使用相同名单。保存到 n8n 的 Compose 配置后运行 `docker compose up -d --no-deps n8n`，让容器载入新环境变量；仅执行 `restart` 不会更新这些变量。此设置保留其他外网请求的代理配置。
+
+排查时从 **n8n 容器内部**请求组件的 `/health`，使用和节点相同的组件地址。例如将下方地址替换为实际地址：
+
+```sh
+docker exec <n8n容器名> node -e 'fetch("http://192.168.1.10:8789/health", {signal: AbortSignal.timeout(10000)}).then(async r => {console.log(r.status, await r.text()); process.exitCode = r.ok ? 0 : 1}).catch(() => {console.error("组件连接失败"); process.exitCode = 1})'
+```
+
+收到 `200 {"status":"ok"}` 后，再运行 **Account → Get**。宿主机或用户浏览器能打开组件，并不代表 n8n 容器使用代理时也能连通；`/health` 通过也只表示组件连通，账号读取才能进一步确认番茄访问和登录态。
+
 如果你的 n8n 不支持此实例级配置，管理员可以逐个预配置扫码凭据：**Login Service URL** 填 `PUBLIC_URL`，**Client ID** 和 **Client Secret** 填组件配置的同名值，再交给使用者扫码。
 
 Client Secret 是登录组件的独立随机密钥，不使用 npm Token、GitHub Token 或番茄 Cookie。
@@ -110,6 +124,7 @@ Client Secret 是登录组件的独立随机密钥，不使用 npm Token、GitHu
 
 ## 常见问题
 
+- **节点报 HTTP 502，但扫码组件运行正常**：先检查 n8n 到组件的连接。全局 HTTP 代理可能把内网组件请求转发到代理并返回 502；按上文把组件主机加入 `NO_PROXY` / `no_proxy` 后重新创建 n8n 容器，再执行账号读取。不要仅凭 502 判断登录态失效。
 - **显示 Client ID/Secret 不匹配**：核对组件 `.env` 与 n8n 凭据，修改配置后重启组件。
 - **回调地址未登记**：复制 n8n 凭据页的完整 OAuth Redirect URL，更新 `REDIRECT_URIS` 后重新创建组件容器（`docker compose up -d`）。仅 `docker compose restart` 不会载入新的 `.env`。自建 n8n 的回调通常取自 `N8N_EDITOR_BASE_URL`，它可能与当前浏览器使用的局域网 IP 不同。只登记实际使用的精确回调地址，不使用通配符。
 - **扫码后提示从不同浏览器发起或 Unauthorized**：回到 OAuth Redirect URL 对应的 n8n 主入口，登录后重新点连接。连接前后使用同一个浏览器和同一个 n8n 域名/IP；不要关闭浏览器绑定、Cookie 或回调认证检查来规避错误。

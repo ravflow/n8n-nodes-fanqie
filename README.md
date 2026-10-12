@@ -8,30 +8,30 @@ This independent community package uses website session APIs. An official public
 
 ## Install from npm
 
-Public release requires npm maintainer approval. The QR-enabled **0.1.1-alpha.5** source and local archive are available for self-hosted testing; do not assume a staged version is installable from the registry. Once published, install through **Settings → Community nodes → Install**:
+Public release requires npm maintainer approval. The QR-enabled **0.1.1-alpha.6** source and local archive are available for self-hosted testing; do not assume a staged version is installable from the registry. Once published, install through **Settings → Community nodes → Install**:
 
 ```text
-n8n-nodes-fanqie@0.1.1-alpha.5
+n8n-nodes-fanqie@0.1.1-alpha.6
 ```
 
 Search for **Fanqie Author** in the workflow editor after installation. The alpha uses an explicit version so it does not replace a stable npm `latest` release. This package has not been verified by n8n. Installation requires unverified community packages to be enabled; n8n Cloud availability depends on a separate verification review.
 
 ## Install a local archive
 
-Build an archive with `npm run build` and `npm pack`. Install `n8n-nodes-fanqie-0.1.1-alpha.5.tgz` in the n8n user's community-node directory, then restart n8n. The archive includes `login-service/` for deploying the optional QR component.
+Build an archive with `npm run build` and `npm pack`. Install `n8n-nodes-fanqie-0.1.1-alpha.6.tgz` in the n8n user's community-node directory, then restart n8n. The archive includes `login-service/` for deploying the optional QR component.
 
 For an npm deployment on Linux or macOS:
 
 ```sh
 mkdir -p ~/.n8n/nodes
 cd ~/.n8n/nodes
-npm install /absolute/path/n8n-nodes-fanqie-0.1.1-alpha.5.tgz
+npm install /absolute/path/n8n-nodes-fanqie-0.1.1-alpha.6.tgz
 ```
 
 For Docker, install as the container's `node` user:
 
 ```sh
-docker cp n8n-nodes-fanqie-0.1.1-alpha.5.tgz YOUR_N8N_CONTAINER:/tmp/fanqie.tgz
+docker cp n8n-nodes-fanqie-0.1.1-alpha.6.tgz YOUR_N8N_CONTAINER:/tmp/fanqie.tgz
 docker exec --user node YOUR_N8N_CONTAINER sh -lc 'mkdir -p /home/node/.n8n/nodes && cd /home/node/.n8n/nodes && npm install /tmp/fanqie.tgz'
 docker restart YOUR_N8N_CONTAINER
 ```

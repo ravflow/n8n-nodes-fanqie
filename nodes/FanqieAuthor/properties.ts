@@ -109,7 +109,7 @@ const properties: INodeProperties[] = [
 		default: 'session',
 		displayOptions: {
 			show: { '@version': [1] },
-			hide: { resource: ['advanced'], operation: ['getCatalog'] },
+			hide: { operation: ['getCatalog'] },
 		},
 	},
 	{
@@ -132,7 +132,7 @@ const properties: INodeProperties[] = [
 		default: 'qrLogin',
 		displayOptions: {
 			show: { '@version': [{ _cnd: { gte: 1.1 } }] },
-			hide: { resource: ['advanced'], operation: ['getCatalog'] },
+			hide: { operation: ['getCatalog'] },
 		},
 	},
 	{
@@ -400,7 +400,7 @@ properties.push(
 		default: '{}',
 		description:
 			'Additional API parameters. On advanced requests this is the complete query or form payload. IDs should be strings.',
-		displayOptions: { hide: { resource: ['advanced'], operation: ['getCatalog'] } },
+		displayOptions: { hide: { operation: ['getCatalog'] } },
 	},
 	{
 		displayName: 'Response Mode',
@@ -447,7 +447,7 @@ properties.push(
 				description: 'Request timeout in milliseconds',
 			},
 		],
-		displayOptions: { hide: { resource: ['advanced'], operation: ['getCatalog'] } },
+		displayOptions: { hide: { operation: ['getCatalog'] } },
 	},
 );
 

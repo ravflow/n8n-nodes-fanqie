@@ -59,7 +59,7 @@ export class FanqieAuthor implements INodeType {
 				required: true,
 				displayOptions: {
 					show: { authentication: ['session'] },
-					hide: { resource: ['advanced'], operation: ['getCatalog'] },
+					hide: { operation: ['getCatalog'] },
 				},
 			},
 			{
@@ -67,7 +67,7 @@ export class FanqieAuthor implements INodeType {
 				required: true,
 				displayOptions: {
 					show: { authentication: ['qrLogin'] },
-					hide: { resource: ['advanced'], operation: ['getCatalog'] },
+					hide: { operation: ['getCatalog'] },
 				},
 			},
 		],
